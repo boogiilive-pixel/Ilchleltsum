@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-// Fix: Import Link from 'react-router' to resolve the "no exported member" error in this environment.
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { 
   Play, 
   ArrowRight, 
@@ -287,7 +286,7 @@ const LandingPage: React.FC = () => {
             <Sparkles className="text-teal-400 w-10 h-10 animate-pulse" />
             <h2 className="text-4xl md:text-5xl font-black">Өнөөдрийн Урам Зориг</h2>
           </div>
-          <p className="text-teal-200/80 mb-12 text-xl max-w-2xl mx-auto">Ямар нэг зүйлд санаа зовж байна уу? Сэдвээ бичээд AI-аас урам зориг өгөх үг аваарай.</p>
+          <p className="text-teal-200/80 mb-12 text-xl max-w-2xl mx-auto">Ямар нэг зүйлд санаа зовж байна уу? Сэдвээ бичээд AI-аас урам зориг өгөх үг авах боломжтой.</p>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-12 bg-white/5 p-2 rounded-[32px] border border-white/10 backdrop-blur-md">
             <input 

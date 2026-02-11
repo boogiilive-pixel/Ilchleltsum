@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-// Fix: Import routing components from 'react-router' to resolve "no exported member" errors in this environment.
-import { HashRouter, Routes, Route, Link, useLocation } from 'react-router';
+import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
   Calendar, 
@@ -32,7 +31,6 @@ import DonationPage from './pages/DonationPage';
 /** 
  * ЛОГО БҮРЭЛДЭХҮҮН:
  * Энэ нь таны явуулсан Адвентист сүмийн логог SVG кодоор илэрхийлсэн хувилбар юм.
- * Зургийн файл шаардлагагүй, код дотор шууд ажиллана.
  */
 const AdventistLogo = ({ className = "w-12 h-12" }) => (
   <div className={`${className} bg-[#235d5e] rounded-full flex items-center justify-center p-1.5 shadow-md overflow-hidden transition-transform hover:scale-105`}>
@@ -43,13 +41,6 @@ const AdventistLogo = ({ className = "w-12 h-12" }) => (
       <path d="M40 70h20v5H40z" />
       <path d="M50 10c22.1 0 40 17.9 40 40s-17.9 40-40 40S10 72.1 10 50 27.9 10 50 10m0-2C23.5 8 2 29.5 2 56s21.5 48 48 48 48-21.5 48-48S76.5 8 50 8z" opacity="0.1" />
     </svg>
-    {/* Backup image logic if you want to use the Base64 in future */}
-    <img 
-      src="https://adventist.org/wp-content/uploads/2019/12/SDA-Logo-Standard-Colors.png" 
-      alt="SDA Logo" 
-      className="hidden" 
-      onError={(e) => e.currentTarget.style.display = 'none'}
-    />
   </div>
 );
 

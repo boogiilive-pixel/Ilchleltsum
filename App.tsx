@@ -18,16 +18,13 @@ import {
   Loader2,
   Coins
 } from 'lucide-react';
-import LandingPage from './pages/LandingPage';
-import SermonPage from './pages/SermonPage';
-import EventsPage from './pages/EventsPage';
-import MinistryPage from './pages/MinistryPage';
-import ContactPage from './pages/ContactPage';
-import DonationPage from './pages/DonationPage';
+import LandingPage from './pages/LandingPage.tsx';
+import SermonPage from './pages/SermonPage.tsx';
+import EventsPage from './pages/EventsPage.tsx';
+import MinistryPage from './pages/MinistryPage.tsx';
+import ContactPage from './pages/ContactPage.tsx';
+import DonationPage from './pages/DonationPage.tsx';
 
-/** 
- * ЛОГО БҮРЭЛДЭХҮҮН
- */
 const AdventistLogo = ({ className = "w-12 h-12" }) => (
   <div className={`${className} bg-[#235d5e] rounded-full flex items-center justify-center p-1.5 shadow-md overflow-hidden transition-transform hover:scale-105`}>
     <svg viewBox="0 0 100 100" className="w-full h-full text-white fill-current">

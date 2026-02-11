@@ -9,11 +9,8 @@ import {
   Menu, 
   X, 
   PlayCircle,
-  Heart,
-  ArrowRight,
   Facebook,
   Youtube,
-  Instagram,
   Mail,
   Lock,
   User as UserIcon,
@@ -29,8 +26,7 @@ import ContactPage from './pages/ContactPage';
 import DonationPage from './pages/DonationPage';
 
 /** 
- * ЛОГО БҮРЭЛДЭХҮҮН:
- * Энэ нь таны явуулсан Адвентист сүмийн логог SVG кодоор илэрхийлсэн хувилбар юм.
+ * ЛОГО БҮРЭЛДЭХҮҮН
  */
 const AdventistLogo = ({ className = "w-12 h-12" }) => (
   <div className={`${className} bg-[#235d5e] rounded-full flex items-center justify-center p-1.5 shadow-md overflow-hidden transition-transform hover:scale-105`}>
@@ -227,27 +223,35 @@ const Footer: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/sermons" element={<SermonPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/ministries" element={<MinistryPage />} />
+          <Route path="/donation" element={<DonationPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+        </Routes>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+const App: React.FC = () => {
   return (
     <HashRouter>
-      <div className="min-h-screen flex flex-col">
-        <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
-        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/sermons" element={<SermonPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/ministries" element={<MinistryPage />} />
-            <Route path="/donation" element={<DonationPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <AppContent />
     </HashRouter>
   );
 };
+
 export default App;

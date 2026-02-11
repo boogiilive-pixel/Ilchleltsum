@@ -1,0 +1,8 @@
+{
+  "name": "Илчлэлт Сүм (Ilchleltsum)",
+  "description": "A modern, responsive website for the Ilchleltsum (Revelation Church), featuring sermon archives, upcoming events, and AI-powered spiritual encouragement.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

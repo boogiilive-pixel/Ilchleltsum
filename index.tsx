@@ -3,10 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 
-// Polyfill process for browser environment to prevent crashes
-// Cast window to any to fix TypeScript error: Property 'process' does not exist on type 'Window & typeof globalThis'
-if (typeof window !== 'undefined' && !(window as any).process) {
-  (window as any).process = { env: {} };
+// Polyfill process for browser environment
+if (typeof window !== 'undefined') {
+  (window as any).process = (window as any).process || { env: {} };
 }
 
 const rootElement = document.getElementById('root');

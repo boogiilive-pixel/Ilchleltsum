@@ -8,13 +8,7 @@ export default defineConfig({
     port: 3000,
   },
   define: {
-    // API_KEY-г build хийх явцад process.env-д оноож өгөх
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY)
-  },
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      input: './index.html'
-    }
+    // API_KEY-г build болон dev үед process.env-д оноож өгөх
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || '')
   }
 });

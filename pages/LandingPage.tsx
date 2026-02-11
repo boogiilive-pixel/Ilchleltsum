@@ -14,16 +14,11 @@ import {
   Maximize2, 
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertCircle
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
 
-/**
- * ЗУРГУУДЫГ ЭНД СОЛИНО:
- * url: Зургийн холбоос (Facebook эсвэл бусад вэбээс авсан зураг байж болно)
- * title: Зургийн тайлбар
- * size: Харагдах хэмжээ (large, wide, small)
- */
 const GALLERY_IMAGES = [
   { url: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=800&q=80", title: "Нөхөрлөлийн цаг", size: "large" },
   { url: "https://images.unsplash.com/photo-1510590337019-5ef8d3d32116?auto=format&fit=crop&w=600&q=80", title: "Магтан хүндэтгэл", size: "small" },
@@ -33,7 +28,6 @@ const GALLERY_IMAGES = [
   { url: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=600&q=80", title: "Хайрын үйлчлэл", size: "small" },
 ];
 
-// Нүүр хэсгийн том зураг
 const HERO_IMAGE_URL = "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1920&q=80";
 
 const LandingPage: React.FC = () => {
@@ -238,6 +232,7 @@ const LandingPage: React.FC = () => {
               type="text" 
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleGetEncouragement()}
               placeholder="Сэдэв (жишээ нь: итгэл найдвар, гэр бүл...)"
               className="flex-grow px-8 py-5 rounded-[24px] bg-transparent text-white placeholder-white/30 focus:outline-none text-lg"
             />
@@ -246,8 +241,15 @@ const LandingPage: React.FC = () => {
             </button>
           </div>
           {encouragement && (
-            <div className="p-10 rounded-[40px] bg-white/5 backdrop-blur-xl border border-white/10 animate-in fade-in zoom-in duration-500">
-              <p className="text-2xl md:text-3xl italic leading-relaxed font-medium text-teal-50">"{encouragement}"</p>
+            <div className={`p-10 rounded-[40px] bg-white/5 backdrop-blur-xl border border-white/10 animate-in fade-in zoom-in duration-500 flex flex-col items-center gap-6`}>
+               {encouragement.includes("API Key") ? (
+                 <div className="flex items-center gap-3 text-amber-400">
+                   <AlertCircle className="w-8 h-8" />
+                   <p className="text-lg font-bold">{encouragement}</p>
+                 </div>
+               ) : (
+                 <p className="text-2xl md:text-3xl italic leading-relaxed font-medium text-teal-50">"{encouragement}"</p>
+               )}
             </div>
           )}
         </div>

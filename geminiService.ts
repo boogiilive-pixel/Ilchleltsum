@@ -2,11 +2,12 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const getEncouragement = async (topic: string): Promise<string> => {
+  // process.env.API_KEY-г Vite define тохиргооноос шууд авна
   const apiKey = process.env.API_KEY;
 
-  if (!apiKey || apiKey === "undefined" || apiKey === "") {
-    console.error("API Key is missing. Check your environment variables.");
-    return "Уучлаарай, системд API Key тохируулаагүй байна. Та түр хүлээгээд дахин оролдоно уу.";
+  if (!apiKey || apiKey === "" || apiKey === "undefined") {
+    console.warn("API Key is currently empty or undefined. Please set the environment variable.");
+    return "Одоогоор AI систем холбогдоогүй байна. Та түр хүлээгээд дахин оролдоно уу.";
   }
 
   try {
@@ -14,19 +15,15 @@ export const getEncouragement = async (topic: string): Promise<string> => {
     
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Та Илчлэлт сүмийн вэбсайтын туслах байна. Дараах сэдэвтэй холбоотой урам зориг өгөх, Библи дээр үндэслэсэн богино (2-3 өгүүлбэр) мессеж Монгол хэлээр бичээрэй. Сэдэв: ${topic}`,
-      config: {
-        temperature: 0.7,
-        maxOutputTokens: 200,
-      }
+      contents: `Би "Илчлэлт сүм" (Revelation Church)-ийн вэбсайт дээр байна. Надад дараах сэдвээр урам зориг өгөх богино хэмжээний (3-4 өгүүлбэр) Христийн шашны сургаал эсвэл Библийн эшлэл дээр үндэслэсэн үг хэлж өгөөч. Сэдэв: ${topic}. Хэл: Монгол хэл.`,
     });
 
-    return response.text || "Одоогоор хариу ирүүлж чадсангүй. Дахин оролдоно уу.";
+    return response.text || "Уучлаарай, хариу ирүүлж чадсангүй.";
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
+    console.error("Gemini API Error Detail:", error);
     if (error.message?.includes("API key not valid")) {
-      return "Таны оруулсан API Key буруу байна. Google AI Studio-оос зөв түлхүүр авсан эсэхээ шалгаарай.";
+      return "Таны оруулсан API Key буруу байна. Google AI Studio-оос түлхүүрээ дахин шалгана уу.";
     }
-    return "Холболтын алдаа гарлаа. Та интернэтээ шалгаад дахин оролдоно уу.";
+    return "Холболтын алдаа гарлаа. Та дараа дахин оролдоорой.";
   }
 };

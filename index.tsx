@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 
-// Polyfill process for browser environment
+// Polyfill process for browser environment immediately
 if (typeof window !== 'undefined') {
   (window as any).process = (window as any).process || { env: {} };
 }

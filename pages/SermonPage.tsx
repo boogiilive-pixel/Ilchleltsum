@@ -5,8 +5,7 @@ import {
   RefreshCw, 
   Sparkles, 
   ExternalLink,
-  Play,
-  ArrowRight
+  Play
 } from 'lucide-react';
 
 interface YouTubeVideo {
@@ -21,7 +20,7 @@ interface YouTubeVideo {
 const CHANNEL_ID = 'UC87i3_n-zR6xNfR_Yy-Y75A'; // @ilchlelt channel ID
 const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
 
-// Таны өгсөн бичлэгүүд болон бусад бодит видеонууд
+// Таны өгсөн бичлэгүүд
 const FALLBACK_VIDEOS: YouTubeVideo[] = [
   {
     id: 'Q4TXZUBR0yA',
@@ -128,7 +127,6 @@ const SermonPage: React.FC = () => {
         }).filter(v => v.id);
 
         if (fetchedVideos.length > 0) {
-          // Шинэ бичлэгүүдийг өмнөхүүдтэй нэгтгэхдээ давхардалгүйгээр авна
           setVideos(prev => {
             const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
             const unique = Array.from(new Map(all.map(v => [v.id, v])).values());

@@ -46,7 +46,7 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-teal-900">Хаяг байршил</h4>
-                    <p className="text-slate-600 font-medium">Улаанбаатар хот, Баянзүрх дүүрэг, 13-р хороолол, Илчлэлт сүм.</p>
+                    <p className="text-slate-600 font-medium">5р гудамж 261, HUD - 8 khoroo, Ulaanbaatar, Mongolia, 17111</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -55,16 +55,16 @@ const ContactPage: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-teal-900">Утас</h4>
-                    <p className="text-slate-600 font-medium">+976 9900-1122</p>
+                    <p className="text-slate-600 font-medium">+976 9507-6599</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center text-teal-700">
-                    <Mail />
+                    <Facebook />
                   </div>
                   <div>
-                    <h4 className="font-bold text-teal-900">Э-мэйл</h4>
-                    <p className="text-slate-600 font-medium">info@ilchleltsum.mn</p>
+                    <h4 className="font-bold text-teal-900">Facebook</h4>
+                    <p className="text-slate-600 font-medium">Илчлэлт</p>
                   </div>
                 </div>
               </div>

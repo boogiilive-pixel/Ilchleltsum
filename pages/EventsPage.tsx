@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
@@ -10,42 +11,36 @@ import {
   User, 
   Phone, 
   Loader2,
-  Info
+  Info,
+  Globe,
+  Heart
 } from 'lucide-react';
 import { Event } from '../types';
 
 const EVENTS: Event[] = [
   {
     id: '1',
-    title: 'Бямба гарагийн гол цуглаан (Шаббат)',
-    date: 'Долоо хоног бүр',
-    time: '11:30 AM',
-    location: 'Сүмийн төв байр',
-    description: 'Бүх нийтийн магтан хүндэтгэл, сургаал номлолын цаг.'
+    title: 'Библи судлал Онлайн',
+    date: 'Лхагва гараг бүр',
+    time: '18:30 PM',
+    location: 'Онлайн (Zoom / Facebook)',
+    description: 'Бурханы үгийг хамтдаа гүнзгийрүүлэн судалж, сүнслэг мэдлэгээ тэлж, амьдралын чухал асуултууддаа Библиэс хариулт авах танин мэдэхүйн цаг.'
   },
   {
     id: '2',
-    title: 'Залуучуудын үдэш',
-    date: 'Бямба гараг бүр',
-    time: '18:00 PM',
-    location: 'Залуучуудын танхим',
-    description: 'Залуучуудад зориулсан сонирхолтой хөтөлбөр, нөхөрлөл.'
+    title: 'Залбирлын цуглаан',
+    date: 'Баасан гараг бүр',
+    time: '18:30 PM',
+    location: 'Сүмийн төв байр',
+    description: 'Зүрх сэтгэлээ нэгтгэн Бурхантай ярилцах ариун мөч. Залбирал бол биднийг Бурхантай холбодог алтан гүүр бөгөөд итгэгч хүний хүч чадлын эх ундарга юм.'
   },
   {
     id: '3',
-    title: 'Эмэгтэйчүүдийн уулзалт',
-    date: '2024.03.15',
-    time: '14:00 PM',
-    location: 'Уулзалтын өрөө 2',
-    description: 'Эмэгтэйчүүдийн халуун дулаан нөхөрлөл, Библийн хичээл.'
-  },
-  {
-    id: '4',
-    title: 'Библийн хичээл',
+    title: 'Хүндэтгэлийн цуглаан',
     date: 'Бямба гараг бүр',
     time: '10:00 AM',
     location: 'Сүмийн төв байр',
-    description: 'Долоо дахь өдрийн Адвентист сүмийн уламжлалт Библийн сургалт.'
+    description: 'Магтан хүндэтгэл, амьд сургаал номлолоор дамжуулан Бурханы ивээлд хамтдаа амрах Шаббат өдрийн баяр. Долоо хоногийн хамгийн эрхэм, амар амгалан мөч.'
   }
 ];
 
@@ -63,7 +58,6 @@ const EventRegistrationModal: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    // Simulation of API call
     setTimeout(() => {
       setLoading(false);
       onSuccess(event.title);
@@ -89,7 +83,7 @@ const EventRegistrationModal: React.FC<{
               <Calendar className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900">Бүртгүүлэх</h2>
-            <p className="text-slate-500 mt-2 font-medium">"{event.title}" арга хэмжээнд оролцох хүсэлт илгээх.</p>
+            <p className="text-slate-500 mt-2 font-medium">"{event.title}"-д оролцох хүсэлт илгээх.</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
@@ -103,7 +97,7 @@ const EventRegistrationModal: React.FC<{
                   disabled={loading}
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
                   placeholder="Жишээ: Батын Дорж"
                 />
               </div>
@@ -119,31 +113,15 @@ const EventRegistrationModal: React.FC<{
                   disabled={loading}
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
                   placeholder="99XXXXXX"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Гэрийн хаяг</label>
-              <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  type="text" 
-                  required
-                  disabled={loading}
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                  placeholder="Дүүрэг, хороо, байр, тоот"
                 />
               </div>
             </div>
 
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Таны мэдээллийг бид зөвхөн энэхүү арга хэмжээний зохион байгуулалтад ашиглах бөгөөд нууцлалыг хадгална.</p>
+              <p>Бид таны мэдээллийг хүлээн аваад, холбогдох заавар мэдээллийг (линк, байршил г.м) илгээх болно.</p>
             </div>
 
             <button 
@@ -151,7 +129,7 @@ const EventRegistrationModal: React.FC<{
               disabled={loading}
               className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg shadow-teal-700/20 active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Бүртгүүлэх'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Илгээх'}
             </button>
           </form>
         </div>
@@ -174,8 +152,8 @@ const EventsPage: React.FC = () => {
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-5xl mx-auto px-4">
         <header className="mb-12">
-          <h1 className="text-4xl font-bold mb-4">Үйл ажиллагаа</h1>
-          <p className="text-slate-600">Цуглаан болон бусад арга хэмжээнүүдийн цаг, бүртгэл.</p>
+          <h1 className="text-4xl font-black mb-4 text-slate-900">Үйл ажиллагаа</h1>
+          <p className="text-slate-600 text-lg">Бидний цуглаан болон тогтмол арга хэмжээнүүд.</p>
         </header>
 
         {registeredEvent && (
@@ -185,8 +163,8 @@ const EventsPage: React.FC = () => {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-lg">Амжилттай бүртгүүллээ!</h4>
-                <p className="text-teal-100">"{registeredEvent}"-д оролцох таны хүсэлтийг хүлээн авлаа. Бид удахгүй холбогдох болно.</p>
+                <h4 className="font-bold text-lg">Амжилттай илгээгдлээ!</h4>
+                <p className="text-teal-100">"{registeredEvent}"-д оролцох таны хүсэлтийг хүлээн авлаа.</p>
               </div>
             </div>
             <button onClick={() => setRegisteredEvent(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -195,50 +173,58 @@ const EventsPage: React.FC = () => {
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {EVENTS.map((event) => (
-            <div key={event.id} className="bg-white p-6 md:p-8 rounded-[32px] shadow-sm flex flex-col md:flex-row gap-8 items-start md:items-center hover:shadow-xl hover:-translate-y-1 transition-all border border-slate-100">
-              <div className="bg-teal-50 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[140px] border border-teal-100/50">
-                <Calendar className="w-8 h-8 text-teal-700 mb-2" />
-                <span className="font-bold text-teal-900 text-center leading-tight">{event.date}</span>
+            <div key={event.id} className="bg-white p-6 md:p-10 rounded-[40px] shadow-sm flex flex-col md:flex-row gap-8 items-start md:items-center hover:shadow-2xl hover:-translate-y-1 transition-all border border-slate-100 group">
+              <div className="bg-teal-50 p-6 rounded-3xl flex flex-col items-center justify-center min-w-[160px] border border-teal-100/50 group-hover:bg-teal-700 group-hover:border-teal-700 transition-colors">
+                {event.title.includes('Онлайн') ? (
+                   <Globe className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                ) : event.title.includes('Залбирал') ? (
+                   <Heart className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                ) : (
+                   <Calendar className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                )}
+                <span className="font-black text-teal-900 group-hover:text-white text-center leading-tight">{event.date}</span>
               </div>
               <div className="flex-grow">
-                <h3 className="text-2xl font-bold mb-3 text-slate-900">{event.title}</h3>
-                <p className="text-slate-600 mb-5 leading-relaxed">{event.description}</p>
-                <div className="flex flex-wrap gap-5 text-sm font-semibold text-slate-500">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
-                    <Clock className="w-4 h-4 text-teal-600" />
+                <h3 className="text-2xl font-black mb-3 text-slate-900">{event.title}</h3>
+                <p className="text-slate-600 mb-6 leading-relaxed text-lg">{event.description}</p>
+                <div className="flex flex-wrap gap-5 text-sm font-bold text-slate-500">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                    <Clock className="w-5 h-5 text-teal-600" />
                     {event.time}
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg">
-                    <MapPin className="w-4 h-4 text-teal-600" />
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                    <MapPin className="w-5 h-5 text-teal-600" />
                     {event.location}
                   </div>
                 </div>
               </div>
               <button 
                 onClick={() => setSelectedEvent(event)}
-                className="w-full md:w-auto flex items-center justify-center gap-2 bg-teal-700 text-white px-8 py-4 rounded-2xl font-bold hover:bg-teal-800 transition-all shadow-lg shadow-teal-700/10 active:scale-95"
+                className="w-full md:w-auto flex items-center justify-center gap-2 bg-teal-700 text-white px-10 py-5 rounded-2xl font-black text-lg hover:bg-teal-800 transition-all shadow-xl shadow-teal-700/20 active:scale-95 whitespace-nowrap"
               >
-                Бүртгүүлэх <ArrowRight className="w-4 h-4" />
+                Нэгдэх <ArrowRight className="w-5 h-5" />
               </button>
             </div>
           ))}
         </div>
 
-        <div className="mt-20 p-10 md:p-16 bg-slate-900 rounded-[40px] text-white flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-          <div className="relative z-10 text-center md:text-left">
-            <h3 className="text-3xl font-bold mb-4">Бидэнтэй хамт байгаарай</h3>
-            <p className="text-slate-400 max-w-md">Байр түрээс болон бусад асуудлаар бидэнтэй холбогдож хамтран ажиллах боломжтой.</p>
+        <div className="mt-20 p-12 md:p-20 bg-slate-900 rounded-[60px] text-white flex flex-col lg:flex-row items-center justify-between gap-12 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full -mr-48 -mt-48 blur-[100px]"></div>
+          <div className="relative z-10 text-center lg:text-left max-w-xl">
+            <h3 className="text-4xl font-black mb-6">Хамтдаа өсөцгөөе</h3>
+            <p className="text-slate-400 text-xl leading-relaxed">Бидний нөхөрсөг гэр бүлд нэгдэж, итгэл найдвараар дүүрэн амьдралыг хамтдаа бүтээхийг урьж байна.</p>
           </div>
-          <button className="relative z-10 bg-teal-700 text-white px-10 py-5 rounded-2xl font-bold hover:bg-teal-800 transition-all whitespace-nowrap shadow-xl active:scale-95">
-            Хүсэлт илгээх
-          </button>
+          <Link 
+            to="/contact"
+            className="relative z-10 bg-teal-600 text-white px-12 py-6 rounded-2xl font-black text-xl hover:bg-teal-500 transition-all shadow-2xl active:scale-95"
+          >
+            Бидэнтэй холбогдох
+          </Link>
         </div>
       </div>
 
-      {/* Registration Modal */}
       <EventRegistrationModal 
         event={selectedEvent} 
         onClose={() => setSelectedEvent(null)} 

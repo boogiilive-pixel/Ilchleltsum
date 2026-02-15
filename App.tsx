@@ -210,8 +210,18 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-white font-bold mb-6 text-lg">Цуглааны цаг</h4>
           <ul className="space-y-4 text-sm">
-            <li className="flex flex-col"><span className="text-teal-400 font-bold">Шаббат (Бямба):</span><span>10:00 - Библийн хичээл</span><span>11:30 - Магтан хүндэтгэл</span></li>
-            <li className="flex flex-col"><span className="text-teal-400 font-bold">Лхагва гараг:</span><span>19:00 - Залбирлын цаг</span></li>
+            <li className="flex flex-col">
+              <span className="text-teal-400 font-bold">Лхагва гараг:</span>
+              <span>18:30 - Библи судлал Онлайн</span>
+            </li>
+            <li className="flex flex-col">
+              <span className="text-teal-400 font-bold">Баасан гараг:</span>
+              <span>18:30 - Залбирлын цуглаан</span>
+            </li>
+            <li className="flex flex-col">
+              <span className="text-teal-400 font-bold">Бямба гараг:</span>
+              <span>10:00 - Хүндэтгэлийн цуглаан</span>
+            </li>
           </ul>
         </div>
       </div>

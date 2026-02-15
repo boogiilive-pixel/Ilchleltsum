@@ -20,7 +20,7 @@ interface YouTubeVideo {
 const CHANNEL_ID = 'UC87i3_n-zR6xNfR_Yy-Y75A'; // @ilchlelt channel ID
 const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
 
-// Таны өгсөн бичлэгүүд
+// Таны өгсөн бичлэгүүд болон нэмэлтүүд
 const FALLBACK_VIDEOS: YouTubeVideo[] = [
   {
     id: 'Q4TXZUBR0yA',

@@ -132,7 +132,7 @@ const DonationPage: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 mt-20 md:mt-28 text-center">
         <div className="max-w-3xl mx-auto bg-white p-10 md:p-16 rounded-[48px] md:rounded-[64px] border border-slate-100 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 left-0 w-2 h-full bg-teal-500/20"></div>
-          <h3 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 italic text-slate-700 leading-relaxed">"Өгөөмөр сэтгэлтэй хүн дэгжинэ, бусдыг ундаалагч өөрөө ундаална."</h3>
+          <h3 className="text-xl md:text-3xl font-bold mb-4 md:mb-6 italic text-slate-700 leading-relaxed">"Харамгүй сэтгэлтэн дэвжин дээшилдэг. Бусдыг тэнхрүүлэгч өөрөө тэнхрэх болно."</h3>
           <p className="text-teal-700 font-black tracking-[0.3em] md:tracking-[0.4em] uppercase text-[9px] md:text-[10px]">— Сургаалт үгс 11:25</p>
         </div>
       </section>

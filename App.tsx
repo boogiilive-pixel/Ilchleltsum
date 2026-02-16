@@ -114,8 +114,8 @@ const AuthModal: React.FC<{
               <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h2 className="text-2xl font-bold mb-4">Бүртгэл илгээгдлээ</h2>
-              <p className="text-slate-600">Таны мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авлаа. Бид удахгүй баталгаажуулах болно.</p>
+              <h2 className="text-2xl font-bold mb-4">Таны бүртгэл амжилттай үүслээ.</h2>
+              <p className="text-slate-600">Бид таны мэдээллийг хүлээн авлаа. Удахгүй баталгаажуулах болно.</p>
             </div>
           ) : (
             <>
@@ -125,7 +125,7 @@ const AuthModal: React.FC<{
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
                 <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бүртгэлийн хүсэлтийг boogiilive@gmail.com хаяг руу илгээх болно.'}
+                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бүртгүүлэх хүсэлтээ илгээж бидний гэр бүлд нэгдээрэй.'}
                 </p>
               </div>
               <form className="space-y-4" onSubmit={handleSubmit}>

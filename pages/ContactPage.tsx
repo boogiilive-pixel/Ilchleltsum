@@ -116,8 +116,8 @@ const ContactPage: React.FC = () => {
                 <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h2 className="text-2xl font-bold mb-4">Амжилттай илгээгдлээ!</h2>
-                <p className="text-slate-600 max-w-sm mx-auto">Бид таны хүсэлтийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авлаа. Бид удахгүй холбогдох болно. Баярлалаа.</p>
+                <h2 className="text-2xl font-bold mb-4">Таны хүсэлт амжилттай илгээгдлээ.</h2>
+                <p className="text-slate-600 max-w-sm mx-auto">Бид таны хүсэлтийг хүлээн авлаа. Бид удахгүй холбогдох болно. Баярлалаа.</p>
                 <button 
                   onClick={() => setStatus('idle')}
                   className="mt-8 px-8 py-3 bg-slate-100 text-teal-700 font-bold rounded-xl hover:bg-slate-200 transition-all"
@@ -128,7 +128,7 @@ const ContactPage: React.FC = () => {
             ) : (
               <>
                 <h2 className="text-3xl font-black mb-4 text-slate-900">Хүсэлт илгээх</h2>
-                <p className="text-slate-500 mb-8 font-medium">Залбирлын хүсэлт болон асуултаа энд үлдээнэ үү. (Имэйл: boogiilive@gmail.com)</p>
+                <p className="text-slate-500 mb-8 font-medium">Залбирлын хүсэлт болон асуултаа энд үлдээнэ үү.</p>
                 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -143,7 +143,7 @@ const UniversalModal: React.FC<{
 
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Таны мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авсны дараа бид эргэн холбогдоно.</p>
+              <p>Таны хүсэлтийг хүлээн авсны дараа бид эргэн холбогдох болно.</p>
             </div>
 
             <button 
@@ -165,7 +165,7 @@ const EventsPage: React.FC = () => {
   const [selectedTarget, setSelectedTarget] = useState<{title: string, type: 'event' | 'ministry'} | null>(null);
 
   const handleSuccess = (title: string) => {
-    setSuccessMessage(`"${title}" хүсэлтийг boogiilive@gmail.com хаягаар амжилттай хүлээн авлаа!`);
+    setSuccessMessage(`Таны бүртгэл амжилттай үүслээ. "${title}" хүсэлтийг бид хүлээн авлаа!`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSuccessMessage(null), 8000);
   };
@@ -213,7 +213,7 @@ const EventsPage: React.FC = () => {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-lg">Амжилттай илгээгдлээ!</h4>
+                <h4 className="font-bold text-lg">Амжилттай!</h4>
                 <p className="text-teal-100">{successMessage}</p>
               </div>
             </div>

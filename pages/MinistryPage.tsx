@@ -58,7 +58,7 @@ const RegistrationModal: React.FC<{
               <Users className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900">Багт нэгдэх</h2>
-            <p className="text-slate-500 mt-2 font-medium">"{ministryName}" багт хүчээ өгөх хүсэлт илгээх. (Recipient: boogiilive@gmail.com)</p>
+            <p className="text-slate-500 mt-2 font-medium">"{ministryName}" багт хүчээ өгөх хүсэлт илгээх.</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
@@ -108,7 +108,7 @@ const RegistrationModal: React.FC<{
 
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Таны илгээсэн мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авсны дараа бид удахгүй холбогдоно.</p>
+              <p>Таны илгээсэн мэдээллийг хүлээн авсны дараа бид удахгүй холбогдоно.</p>
             </div>
 
             <button 
@@ -154,8 +154,8 @@ const MinistryPage: React.FC = () => {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-bold text-lg">Хүсэлтийг хүлээн авлаа!</h4>
-                <p className="text-teal-100">Таныг "{joinedMinistry}" багт нэгдэх хүсэлт гаргасанд баярлалаа. Мэдээлэл boogiilive@gmail.com хаягаар илгээгдлээ.</p>
+                <h4 className="font-bold text-lg">Таны бүртгэл амжилттай үүслээ.</h4>
+                <p className="text-teal-100">Таныг "{joinedMinistry}" багт нэгдэх хүсэлт гаргасанд баярлалаа. Бид удахгүй холбогдох болно.</p>
               </div>
             </div>
             <button onClick={() => setJoinedMinistry(null)} className="p-2 hover:bg-white/10 rounded-full">

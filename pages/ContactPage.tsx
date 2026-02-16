@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Facebook, Youtube, Send, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
 
 const ContactPage: React.FC = () => {
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -11,20 +11,34 @@ const ContactPage: React.FC = () => {
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
-    
     setStatus('sending');
     
-    // Мэдээллийг boogiilive@gmail.com-руу илгээх процесс (Simulation)
-    console.log("Sending data to boogiilive@gmail.com:", formData);
-    
-    setTimeout(() => {
-      setStatus('success');
-      setFormData({ name: '', phone: '', topic: 'Залбирлын хүсэлт', message: '' });
-      setTimeout(() => setStatus('idle'), 8000);
-    }, 2000);
+    try {
+      const response = await fetch("https://formspree.io/f/xdalgqob", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          ...formData,
+          _subject: `Илчлэлт Сүм: Шинэ зурвас (${formData.name})`
+        })
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', phone: '', topic: 'Залбирлын хүсэлт', message: '' });
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
+      setStatus('error');
+    }
   };
 
   const mapLink = "https://maps.app.goo.gl/wDGGaLogDJDRNRpdA";
@@ -38,7 +52,6 @@ const ContactPage: React.FC = () => {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Info Side */}
           <div className="space-y-8">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
               <h2 className="text-2xl font-bold mb-8">Мэдээлэл</h2>
@@ -71,123 +84,55 @@ const ContactPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="mt-10 pt-10 border-t border-slate-100">
-                <h4 className="font-bold mb-4 text-slate-700">Олон нийтийн сүлжээ</h4>
-                <div className="flex gap-4">
-                  <a href="https://www.facebook.com/ilchleltsum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-teal-700 hover:text-white transition-all shadow-sm">
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                  <a href="https://www.youtube.com/@ilchlelt" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-teal-700 hover:text-white transition-all shadow-sm">
-                    <Youtube className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
             </div>
 
-            {/* Interactive Map Link */}
             <a 
               href={mapLink} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="group relative block h-80 rounded-[40px] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2"
             >
-              <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/20 transition-colors z-10 flex flex-col items-center justify-center">
-                <div className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl flex items-center gap-3 font-black text-teal-800 transition-all group-hover:scale-110 group-hover:bg-teal-700 group-hover:text-white">
+              <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/20 transition-colors z-10 flex flex-col items-center justify-center text-white">
+                <div className="bg-white/95 backdrop-blur-md px-8 py-4 rounded-2xl shadow-xl flex items-center gap-3 font-black text-teal-800 transition-all group-hover:bg-teal-700 group-hover:text-white">
                   <MapPin className="w-6 h-6" />
                   <span>Газрын зураг дээр харах</span>
                   <ExternalLink className="w-4 h-4 opacity-50" />
                 </div>
-                <p className="mt-4 text-white font-bold text-sm tracking-widest uppercase bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm">Илчлэлт Сүм - Байршил</p>
               </div>
-              <img 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" 
-                alt="Map View" 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
-              />
+              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1200&q=80" alt="Map" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000" />
             </a>
           </div>
 
-          {/* Form Side */}
-          <div className="bg-white p-8 md:p-12 rounded-[40px] shadow-lg border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50 rounded-full -mr-16 -mt-16 -z-10"></div>
+          <div className="bg-white p-8 md:p-12 rounded-[40px] shadow-lg border border-slate-100 relative overflow-hidden min-h-[500px] flex flex-col justify-center">
             {status === 'success' ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12 animate-in zoom-in">
                 <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h2 className="text-2xl font-bold mb-4">Таны хүсэлт амжилттай илгээгдлээ.</h2>
-                <p className="text-slate-600 max-w-sm mx-auto">Бид таны хүсэлтийг хүлээн авлаа. Бид удахгүй холбогдох болно. Баярлалаа.</p>
-                <button 
-                  onClick={() => setStatus('idle')}
-                  className="mt-8 px-8 py-3 bg-slate-100 text-teal-700 font-bold rounded-xl hover:bg-slate-200 transition-all"
-                >
-                  Дахин зурвас илгээх
-                </button>
+                <h2 className="text-2xl font-bold mb-4 text-slate-900 leading-tight">Таны мэдээллийг хүлээн авсны дараа бид тантай холбогдох болно.</h2>
+                <button onClick={() => setStatus('idle')} className="mt-8 px-8 py-3 bg-slate-100 text-teal-700 font-bold rounded-xl hover:bg-slate-200 transition-all">Дахин зурвас илгээх</button>
               </div>
             ) : (
               <>
                 <h2 className="text-3xl font-black mb-4 text-slate-900">Хүсэлт илгээх</h2>
-                <p className="text-slate-500 mb-8 font-medium">Залбирлын хүсэлт болон асуултаа энд үлдээнэ үү.</p>
-                
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">Нэр</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                        className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
-                        placeholder="Таны нэр"
-                      />
+                      <input name="name" type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="Таны нэр" />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">Утас</label>
-                      <input 
-                        type="tel" 
-                        required
-                        value={formData.phone}
-                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                        className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
-                        placeholder="99XXXXXX"
-                      />
+                      <input name="phone" type="tel" required value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="99XXXXXX" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Сэдэв</label>
-                    <select 
-                      value={formData.topic}
-                      onChange={(e) => setFormData({...formData, topic: e.target.value})}
-                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 font-bold text-slate-700"
-                    >
-                      <option>Залбирлын хүсэлт</option>
-                      <option>Цуглаанд нэгдэх</option>
-                      <option>Үйлчлэлийн талаар асуух</option>
-                      <option>Бусад</option>
-                    </select>
-                  </div>
-                  <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Зурвас</label>
-                    <textarea 
-                      rows={4}
-                      value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
-                      className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium"
-                      placeholder="Энд бичнэ үү..."
-                    ></textarea>
+                    <textarea name="message" rows={4} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="Залбирлын хүсэлт болон бусад..."></textarea>
                   </div>
-                  <button 
-                    type="submit"
-                    disabled={status === 'sending'}
-                    className="w-full py-5 bg-teal-700 text-white font-black text-lg rounded-2xl hover:bg-teal-800 transition-all shadow-xl shadow-teal-700/20 flex items-center justify-center gap-3 disabled:bg-teal-400 active:scale-[0.98]"
-                  >
-                    {status === 'sending' ? (
-                      <><Loader2 className="w-6 h-6 animate-spin" /> Илгээж байна...</>
-                    ) : (
-                      <><Send className="w-6 h-6" /> Зурвас илгээх</>
-                    )}
+                  {status === 'error' && <p className="text-red-500 text-sm font-bold">Алдаа гарлаа. Дахин оролдоно уу.</p>}
+                  <button type="submit" disabled={status === 'sending'} className="w-full py-5 bg-teal-700 text-white font-black text-lg rounded-2xl hover:bg-teal-800 transition-all shadow-xl flex items-center justify-center gap-3 disabled:bg-teal-400">
+                    {status === 'sending' ? <Loader2 className="w-6 h-6 animate-spin" /> : <><Send className="w-6 h-6" /> Илгээх</>}
                   </button>
                 </form>
               </>

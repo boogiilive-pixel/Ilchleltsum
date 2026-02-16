@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   Users, 
@@ -9,113 +9,109 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   X, 
-  User, 
+  User as UserIcon, 
   Phone, 
-  MapPin, 
   Loader2, 
-  Info 
+  Info,
+  Mail
 } from 'lucide-react';
+import { User } from '../App.tsx';
 
 const RegistrationModal: React.FC<{
   ministryName: string | null;
+  user: User | null;
   onClose: () => void;
   onSuccess: (name: string) => void;
-}> = ({ ministryName, onClose, onSuccess }) => {
+}> = ({ ministryName, user, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: '', phone: '', note: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', note: '' });
+
+  useEffect(() => {
+    if (user && ministryName) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || ''
+      }));
+    }
+  }, [user, ministryName]);
 
   if (!ministryName) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Мэдээллийг boogiilive@gmail.com хаяг руу илгээх процесс
-    console.log(`Ministry signup for "${ministryName}" sent to boogiilive@gmail.com:`, formData);
+    try {
+      const response = await fetch("https://formspree.io/f/xdalgqob", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          ministry_target: ministryName,
+          _subject: `Илчлэлт Сүм: Багт нэгдэх хүсэлт (${ministryName})`,
+        })
+      });
 
-    setTimeout(() => {
+      if (response.ok) {
+        onSuccess(ministryName);
+        onClose();
+      } else {
+        alert("Алдаа гарлаа. Дахин оролдоно уу.");
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("Холболтын алдаа гарлаа.");
+    } finally {
       setLoading(false);
-      onSuccess(ministryName);
-      onClose();
-    }, 1500);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
       <div className="relative bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-        <button 
-          onClick={onClose}
-          disabled={loading}
-          className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50"
-        >
+        <button onClick={onClose} disabled={loading} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors disabled:opacity-50">
           <X className="w-5 h-5" />
         </button>
-
         <div className="p-8 md:p-12">
           <div className="mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-2xl text-teal-700 mb-4">
-              <Users className="w-6 h-6" />
-            </div>
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-2xl text-teal-700 mb-4"><Users className="w-6 h-6" /></div>
             <h2 className="text-2xl font-bold text-slate-900">Багт нэгдэх</h2>
             <p className="text-slate-500 mt-2 font-medium">"{ministryName}" багт хүчээ өгөх хүсэлт илгээх.</p>
           </div>
-
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Бүтэн нэр</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  type="text" 
-                  required
-                  disabled={loading}
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                  placeholder="Жишээ: Батын Дорж"
-                />
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input name="name" type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="Таны нэр" />
               </div>
             </div>
-
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Имэйл хаяг</label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <input name="email" type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="Таны имэйл" />
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">Утасны дугаар</label>
               <div className="relative">
                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input 
-                  type="tel" 
-                  required
-                  disabled={loading}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                  placeholder="99XXXXXX"
-                />
+                <input name="phone" type="tel" required disabled={loading} value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all font-medium" placeholder="99XXXXXX" />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Нэмэлт мэдээлэл (сонголттой)</label>
-              <textarea 
-                rows={3}
-                disabled={loading}
-                value={formData.note}
-                onChange={(e) => setFormData({...formData, note: e.target.value})}
-                className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
-                placeholder="Таны өмнөх туршлага эсвэл бусад зүйлс..."
-              />
-            </div>
-
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Таны илгээсэн мэдээллийг хүлээн авсны дараа бид удахгүй холбогдоно.</p>
+              <p>Таны мэдээллийг хүлээн авсны дараа бид тантай холбогдох болно.</p>
             </div>
-
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg shadow-teal-700/20 active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
-            >
+            <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2">
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Хүсэлт илгээх'}
             </button>
           </form>
@@ -125,9 +121,15 @@ const RegistrationModal: React.FC<{
   );
 };
 
-const MinistryPage: React.FC = () => {
+const MinistryPage: React.FC<{ user?: User | null }> = ({ user = null }) => {
   const [joinedMinistry, setJoinedMinistry] = useState<string | null>(null);
   const [selectedMinistryForForm, setSelectedMinistryForForm] = useState<string | null>(null);
+
+  const handleJoinSuccess = (name: string) => {
+    setJoinedMinistry(name);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => setJoinedMinistry(null), 10000);
+  };
 
   const ministries = [
     { icon: Heart, name: "Хүүхдийн үйлчлэл", desc: "Хамгийн бяцхан итгэгчдэд зориулсан Библийн хичээл болон тоглоомын цаг." },
@@ -138,79 +140,34 @@ const MinistryPage: React.FC = () => {
     { icon: Coffee, name: "Угталт ба Үйлчилгээ", desc: "Цуглаанд ирсэн хүмүүсийг угтан авах, цай кофегоор үйлчлэх баг." }
   ];
 
-  const handleJoinSuccess = (name: string) => {
-    setJoinedMinistry(name);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => setJoinedMinistry(null), 6000);
-  };
-
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
         {joinedMinistry && (
           <div className="mb-12 p-6 bg-teal-700 text-white rounded-3xl shadow-xl flex items-center justify-between animate-in slide-in-from-top duration-500">
             <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-2 rounded-full">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
+              <div className="bg-white/20 p-2 rounded-full"><CheckCircle2 className="w-6 h-6" /></div>
               <div>
-                <h4 className="font-bold text-lg">Таны бүртгэл амжилттай үүслээ.</h4>
-                <p className="text-teal-100">Таныг "{joinedMinistry}" багт нэгдэх хүсэлт гаргасанд баярлалаа. Бид удахгүй холбогдох болно.</p>
+                <h4 className="font-bold text-lg">Амжилттай!</h4>
+                <p className="text-teal-100">Таны мэдээллийг хүлээн авсны дараа бид тантай холбогдох болно.</p>
               </div>
             </div>
-            <button onClick={() => setJoinedMinistry(null)} className="p-2 hover:bg-white/10 rounded-full">
-              <X className="w-5 h-5" />
-            </button>
+            <button onClick={() => setJoinedMinistry(null)} className="p-2 hover:bg-white/10 rounded-full"><X className="w-5 h-5" /></button>
           </div>
         )}
-
-        <header className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl font-bold mb-4 text-slate-900">Үйлчлэлүүд</h1>
-          <p className="text-slate-600 text-lg">Та өөрийн авьяас чадвар, хүсэл сонирхолд нийцсэн үйлчлэлийн багт нэгдэж, бусдад туслах боломжтой.</p>
-        </header>
-
+        <header className="text-center max-w-3xl mx-auto mb-16"><h1 className="text-4xl font-bold mb-4 text-slate-900">Үйлчлэлүүд</h1><p className="text-slate-600 text-lg">Та өөрийн авьяас чадвар, хүсэл сонирхолд нийцсэн үйлчлэлийн багт нэгдээрэй.</p></header>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {ministries.map((m, idx) => (
             <div key={idx} className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
-              <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-700 mb-6 group-hover:bg-teal-700 group-hover:text-white transition-all">
-                <m.icon className="w-8 h-8" />
-              </div>
+              <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-700 mb-6 group-hover:bg-teal-700 group-hover:text-white transition-all"><m.icon className="w-8 h-8" /></div>
               <h3 className="text-2xl font-bold mb-4 text-slate-900">{m.name}</h3>
               <p className="text-slate-600 mb-6 leading-relaxed">{m.desc}</p>
-              <button 
-                onClick={() => setSelectedMinistryForForm(m.name)}
-                className="text-teal-700 font-bold border-b-2 border-teal-100 hover:border-teal-700 transition-all"
-              >
-                Багт нэгдэх
-              </button>
+              <button onClick={() => setSelectedMinistryForForm(m.name)} className="text-teal-700 font-bold border-b-2 border-teal-100 hover:border-teal-700 transition-all">Багт нэгдэх</button>
             </div>
           ))}
         </div>
-
-        <section className="mt-24 rounded-[48px] overflow-hidden relative shadow-2xl group">
-          <img 
-            src="https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS" 
-            alt="Join Ministry" 
-            className="w-full h-[500px] object-cover brightness-[0.4] transition-transform duration-[2s] group-hover:scale-110"
-          />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center p-8">
-            <h2 className="text-3xl md:text-5xl font-black mb-6 leading-tight max-w-2xl">Та яагаад үйлчлэх ёстой вэ?</h2>
-            <p className="max-w-2xl text-lg md:text-xl mb-12 text-slate-200 font-medium">"Та нарын дунд хэн агуу нь байхыг хүснэ, тэр нь үйлчлэгч чинь байх ёстой." <br /><span className="text-teal-400 font-bold italic mt-2 inline-block">— Матай 20:26</span></p>
-            <button 
-              onClick={() => setSelectedMinistryForForm("Ерөнхий үйлчлэл")}
-              className="bg-teal-600 px-12 py-5 rounded-2xl font-bold text-xl hover:bg-teal-700 transition-all shadow-2xl active:scale-95 flex items-center gap-3"
-            >
-              <Heart className="w-6 h-6 fill-current" /> Өнөөдөр нэгдээрэй
-            </button>
-          </div>
-        </section>
       </div>
-
-      <RegistrationModal 
-        ministryName={selectedMinistryForForm} 
-        onClose={() => setSelectedMinistryForForm(null)}
-        onSuccess={handleJoinSuccess}
-      />
+      <RegistrationModal ministryName={selectedMinistryForForm} user={user} onClose={() => setSelectedMinistryForForm(null)} onSuccess={handleJoinSuccess} />
     </div>
   );
 };

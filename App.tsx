@@ -18,7 +18,8 @@ import {
   Loader2,
   Coins,
   Newspaper,
-  CheckCircle2
+  CheckCircle2,
+  ArrowUp
 } from 'lucide-react';
 import LandingPage from './pages/LandingPage.tsx';
 import SermonPage from './pages/SermonPage.tsx';
@@ -26,19 +27,52 @@ import EventsPage from './pages/EventsPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
+import MinistryPage from './pages/MinistryPage.tsx';
 
-// Scroll to top component to handle navigation reset
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-
   return null;
 };
 
-// Official Church Logo from the provided Google Drive link
+// Scroll To Top Button Component
+const ScrollToTopButton = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+    window.addEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  return (
+    <button
+      onClick={scrollToTop}
+      className={`fixed bottom-8 right-8 z-[100] p-4 bg-teal-700 text-white rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-teal-800 focus:outline-none ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
+      }`}
+      aria-label="Scroll to top"
+    >
+      <ArrowUp className="w-6 h-6" />
+    </button>
+  );
+};
+
 export const AdventistLogo = ({ className = "w-12 h-12" }) => (
   <div className={`${className} flex items-center justify-center overflow-hidden transition-transform hover:scale-105`}>
     <img 
@@ -46,7 +80,6 @@ export const AdventistLogo = ({ className = "w-12 h-12" }) => (
       alt="Илчлэлт Сүм" 
       className="w-full h-full object-contain drop-shadow-md"
       onError={(e) => {
-        // Fallback in case image fails
         const target = e.target as HTMLImageElement;
         target.src = "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=100&q=80";
       }}
@@ -71,33 +104,41 @@ const AuthModal: React.FC<{
   
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Мэдээллийг boogiilive@gmail.com хаяг руу илгээх процесс
-    console.log(`Auth request [${isLogin ? 'Login' : 'Signup'}] for ${formData.email} to boogiilive@gmail.com`);
-
-    setTimeout(() => {
-      setLoading(false);
+    // Fail-safe success trigger
+    const failSafeTimer = setTimeout(() => {
       if (!isLogin) {
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          onLoginSuccess({
-            name: formData.name || 'Шинэ Хэрэглэгч',
-            email: formData.email
-          });
+          onLoginSuccess({ name: formData.name || 'Шинэ Хэрэглэгч', email: formData.email });
           onClose();
         }, 2000);
       } else {
-        onLoginSuccess({
-          name: formData.name || 'Зочин', // Хэрэглэгчийн оруулсан нэрийг авна
-          email: formData.email
-        });
+        onLoginSuccess({ name: formData.name || 'Зочин', email: formData.email });
         onClose();
       }
-    }, 1500);
+      setLoading(false);
+    }, 2000);
+
+    try {
+      await fetch("https://formspree.io/f/xdalgqob", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          action: isLogin ? "Нэвтрэх оролдлого" : "Шинэ бүртгүүлэх хүсэлт",
+          _subject: `Илчлэлт Сүм: ${isLogin ? 'Хэрэглэгч нэвтэрлээ' : 'Шинэ хэрэглэгч бүртгүүллээ'}`,
+        })
+      });
+      // Logic handled by timer for smoother UX even if blocked
+    } catch (err) {
+      console.error("Auth error:", err);
+    }
   };
 
   return (
@@ -114,8 +155,8 @@ const AuthModal: React.FC<{
               <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h2 className="text-2xl font-bold mb-4">Таны бүртгэл амжилттай үүслээ.</h2>
-              <p className="text-slate-600">Бид таны мэдээллийг хүлээн авлаа. Удахгүй баталгаажуулах болно.</p>
+              <h2 className="text-xl font-bold mb-4 text-slate-900 leading-tight">Таны мэдээллийг хүлээн авсны дараа бид тантай холбогдох болно.</h2>
+              <p className="text-slate-500 text-sm">Бүртгүүлсэнд баярлалаа.</p>
             </div>
           ) : (
             <>
@@ -125,29 +166,21 @@ const AuthModal: React.FC<{
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
                 <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бүртгүүлэх хүсэлтээ илгээж бидний гэр бүлд нэгдээрэй.'}
+                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бидний гэр бүлд нэгдэх хүсэлтээ илгээгээрэй.'}
                 </p>
               </div>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="relative">
                   <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input 
-                    type="text" 
-                    required 
-                    disabled={loading} 
-                    value={formData.name} 
-                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                    placeholder="Таны нэр" 
-                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" 
-                  />
+                  <input name="name" type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Таны нэр" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
+                  <input name="email" type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
+                  <input name="password" type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
                 </div>
                 <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 active:scale-95">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Нэвтрэх' : 'Хүсэлт илгээх')}
@@ -246,7 +279,7 @@ const Footer: React.FC = () => {
               <span className="text-xs uppercase tracking-widest text-teal-400 font-bold">Revelation Church</span>
             </div>
           </div>
-          <p className="mb-8 max-w-sm leading-relaxed text-slate-400">Гэрэл ба Хайрын Өргөө. Бид Есүс Христийн сайн мэдээг түгээж, нийгэмдээ гэрэл болох зорилготой Долоо дахь өдрийн Адвентист сүм юм.</p>
+          <p className="mb-8 max-w-sm leading-relaxed text-slate-400">Бид Есүс Христийн сайн мэдээг түгээж, нийгэмдээ гэрэл болох зорилготой Долоо дахь өдрийн Адвентист сүм юм.</p>
           <div className="flex gap-4">
             <a href="https://www.facebook.com/ilchleltsum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all"><Facebook className="w-5 h-5" /></a>
             <a href="https://www.youtube.com/@ilchlelt" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all"><Youtube className="w-5 h-5" /></a>
@@ -290,7 +323,7 @@ const AppContent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col relative">
       <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
       <main className="flex-grow">
@@ -298,11 +331,13 @@ const AppContent: React.FC = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/sermons" element={<SermonPage />} />
           <Route path="/info" element={<InfoPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
-          <Route path="/events" element={<EventsPage />} />
+          <Route path="/events" element={<EventsPage user={user} />} />
+          <Route path="/ministry" element={<MinistryPage user={user} />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
       </main>
+      <ScrollToTopButton />
       <Footer />
     </div>
   );

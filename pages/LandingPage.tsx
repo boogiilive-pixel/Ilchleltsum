@@ -23,7 +23,21 @@ import {
 import { getEncouragement } from '../geminiService';
 import { POSTS } from './InfoPage';
 
-// Updated Gallery Images with user-provided links
+// Custom Cross Icon component
+const CrossIcon = ({ className = "w-4 h-4" }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="3" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 2v20M7 7h10" />
+  </svg>
+);
+
 const GALLERY_IMAGES = [
   { url: "https://lh3.googleusercontent.com/d/1ZIMzIMa8QEKPit2qFDouDv_U3IONc9vl", title: "Цуглааны танхим", size: "large" },
   { url: "https://lh3.googleusercontent.com/d/1uuV-NXIdLfgFXIqbOmaY6Au2nsCIA-Yg", title: "Магтан хүндэтгэл", size: "small" },
@@ -108,15 +122,17 @@ const LandingPage: React.FC = () => {
           }}
         ></div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl transition-transform duration-500 ease-out"
+        <div className="relative z-10 text-center px-4 max-w-5xl transition-transform duration-500 ease-out"
           style={{ transform: `translate(${mousePos.x * 15}px, ${mousePos.y * 15}px)` }}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-600/20 text-teal-300 border border-teal-500/30 text-sm font-bold mb-8 backdrop-blur-sm animate-bounce">
-            <Star className="w-4 h-4 fill-current" />
-            Тавтай морил
+          
+          {/* Lowered Badge with Cross Icon */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-600/20 text-teal-300 border border-teal-500/30 text-sm font-bold mt-16 mb-8 backdrop-blur-sm animate-bounce">
+            <CrossIcon className="w-4 h-4 text-teal-300" />
+            Бурхан бол сайн
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight tracking-tight text-shadow-xl">
-            Гэрэл ба Хайрын <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">Өргөө</span>
+          <h1 className="text-5xl md:text-7xl font-black text-white mb-8 leading-tight tracking-tight text-shadow-xl uppercase">
+            Илчлэлт сүмд <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">тавтай морил!</span>
           </h1>
           
           <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-2xl">
@@ -141,7 +157,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">Бидний Үйлчлэлүүд</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Бид бүх насны хүмүүст зориулсан олон төрлийн үйл ажиллагаа явуулдаг.</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Бид бүх насны хүмүүст зориулсан олон төрлийн үйл ажиллагаа явуuldэг.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[

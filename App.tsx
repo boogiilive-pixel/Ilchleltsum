@@ -16,7 +16,8 @@ import {
   User as UserIcon,
   LogOut,
   Loader2,
-  Coins
+  Coins,
+  Newspaper
 } from 'lucide-react';
 import LandingPage from './pages/LandingPage.tsx';
 import SermonPage from './pages/SermonPage.tsx';
@@ -24,6 +25,7 @@ import EventsPage from './pages/EventsPage.tsx';
 import MinistryPage from './pages/MinistryPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
+import InfoPage from './pages/InfoPage.tsx';
 
 // Official Church Logo from the provided Google Drive link
 export const AdventistLogo = ({ className = "w-12 h-12" }) => (
@@ -73,7 +75,7 @@ const AuthModal: React.FC<{
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
-      <div className="relative bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+      <div className="relative bg-white w-full max-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
         <button onClick={onClose} disabled={loading} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
           <X className="w-5 h-5" />
         </button>
@@ -132,6 +134,7 @@ const Navbar: React.FC<{
   const navLinks = [
     { name: 'Нүүр', path: '/', icon: Home },
     { name: 'Сургаал', path: '/sermons', icon: PlayCircle },
+    { name: 'Мэдээлэл', path: '/info', icon: Newspaper },
     { name: 'Үйл ажиллагаа', path: '/events', icon: Calendar },
     { name: 'Үйлчлэлүүд', path: '/ministries', icon: Users },
     { name: 'Хандив', path: '/donation', icon: Coins },
@@ -148,7 +151,7 @@ const Navbar: React.FC<{
             <span className="text-[10px] uppercase tracking-widest font-bold text-teal-700/70 mt-1">Revelation Church</span>
           </div>
         </Link>
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {navLinks.map((link) => (
             <Link key={link.path} to={link.path} className={`font-semibold text-sm transition-all hover:-translate-y-0.5 ${location.pathname === link.path ? 'text-teal-700 underline underline-offset-8 decoration-2' : 'text-slate-600 hover:text-teal-700'}`}>{link.name}</Link>
           ))}
@@ -178,6 +181,7 @@ const Navbar: React.FC<{
 const Footer: React.FC = () => {
   const footerLinks = [
     { path: '/sermons', name: 'Сургаалууд' },
+    { path: '/info', name: 'Мэдээлэл' },
     { path: '/events', name: 'Үйл ажиллагаа' },
     { path: '/ministries', name: 'Үйлчлэлүүд' },
     { path: '/donation', name: 'Хандив' },
@@ -246,6 +250,7 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sermons" element={<SermonPage />} />
+          <Route path="/info" element={<InfoPage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/ministries" element={<MinistryPage />} />
           <Route path="/donation" element={<DonationPage />} />

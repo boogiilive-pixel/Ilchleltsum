@@ -12,8 +12,9 @@ import {
   Phone, 
   Loader2,
   Info,
-  Globe,
-  Heart
+  BookOpen,
+  HandHeart,
+  Users
 } from 'lucide-react';
 import { Event } from '../types';
 
@@ -177,12 +178,12 @@ const EventsPage: React.FC = () => {
           {EVENTS.map((event) => (
             <div key={event.id} className="bg-white p-6 md:p-10 rounded-[40px] shadow-sm flex flex-col md:flex-row gap-8 items-start md:items-center hover:shadow-2xl hover:-translate-y-1 transition-all border border-slate-100 group">
               <div className="bg-teal-50 p-6 rounded-3xl flex flex-col items-center justify-center min-w-[160px] border border-teal-100/50 group-hover:bg-teal-700 group-hover:border-teal-700 transition-colors">
-                {event.title.includes('Онлайн') ? (
-                   <Globe className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
-                ) : event.title.includes('Залбирал') ? (
-                   <Heart className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                {event.id === '1' ? (
+                   <BookOpen className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                ) : event.id === '2' ? (
+                   <HandHeart className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
                 ) : (
-                   <Calendar className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
+                   <Users className="w-10 h-10 text-teal-700 mb-2 group-hover:text-white" />
                 )}
                 <span className="font-black text-teal-900 group-hover:text-white text-center leading-tight">{event.date}</span>
               </div>

@@ -45,7 +45,8 @@ const GALLERY_IMAGES = [
   { url: "https://lh3.googleusercontent.com/d/14od8umGX-lk8HS5pWYk6hySdde5-hSrD", title: "Бидний гэр бүл", size: "wide" },
   { url: "https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS", title: "Залбирлын цаг", size: "small" },
   { url: "https://lh3.googleusercontent.com/d/1g6RH4xBAVfhCPoD2HooPHXPDCPhv1KFr", title: "Хайрын үйлчлэл", size: "small" },
-  { url: "https://lh3.googleusercontent.com/d/1gYlQPTDDuE3qVUSQIL-9pxJvLJztzGpD", title: "Сүнслэг өсөлт", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1e5Cs-v0D5eBN09K7GDJFSaW-TRM-NSoh", title: "Сүнслэг өсөлт", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/10Wpu_lnMQRdetxNpBOf1mgj-_VGT6We1", title: "Цуглааны дурсамж", size: "small" },
 ];
 
 const HERO_IMAGES = [
@@ -168,7 +169,7 @@ const LandingPage: React.FC = () => {
             </Link>
             <Link to="/sermons" className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-10 py-5 rounded-full font-bold text-xl hover:bg-white/20 transition-all flex items-center gap-3 group">
               <Play className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" /> 
-              Сургаал үзэх
+              Сургаал номлол
             </Link>
           </div>
 
@@ -194,9 +195,9 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: Heart, title: "Хүүхдийн үйлчлэл", desc: "Хүүхдүүдийг Бурханы хайранд өсгөх тусгай хөтөлбөр." },
-              { icon: Users, title: "Залуучуудын үйлчлэл", desc: "Шинэ үеийнхэнд зориулсан сонирхолтой нөхөрлөл." },
-              { icon: Calendar, title: "Нийгмийн халамж", desc: "Нийгэмдээ тусалж, бусдыг хайрлах сайн үйлс." }
+              { icon: Heart, title: "Хүүхдийн үйлчлэл", desc: "Хүүхдүүдийг Бурханы хайранд зөв хүмүүжил төлөвшилтэй болгох тусгай хөтөлбөр." },
+              { icon: Users, title: "Залуучуудын үйлчлэл", desc: "Шинэ үеийн залуучуудын хэрэгцээг хангасан онцгой хөтөлбөр" },
+              { icon: Calendar, title: "Нийгэмд хандсан үйлчлэл", desc: "Нийгэмд чиглэсэн сайн үйлсийн үйл ажиллагаа, иргэдийг чадавхжуулах хөтөлбөр" }
             ].map((service, i) => (
               <div key={i} className="p-10 rounded-[32px] bg-slate-50 hover:bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 border border-slate-100 group">
                 <div className="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center text-teal-700 mb-8 group-hover:bg-teal-700 group-hover:text-white transition-all duration-500 shadow-sm">
@@ -219,7 +220,7 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 text-teal-600 font-bold uppercase tracking-widest text-sm mb-4">
-                <Newspaper className="w-5 h-5" /> Сүмийн амьдрал
+                <Newspaper className="w-5 h-5" /> Сүмийн үйл ажиллагаа
               </div>
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Сүүлийн үеийн <span className="text-teal-600">мэдээ</span></h2>
             </div>
@@ -267,7 +268,7 @@ const LandingPage: React.FC = () => {
               <div className="inline-flex items-center gap-2 text-teal-600 font-bold uppercase tracking-widest text-sm mb-4">
                 <Camera className="w-5 h-5" /> Зургийн цомог
               </div>
-              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Бидний амьдралын <span className="text-teal-600">гэрэлт мөчүүд</span></h2>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Цуглааны <span className="text-teal-600">зургуудаас</span></h2>
             </div>
           </div>
 
@@ -326,7 +327,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <div className="flex items-center justify-center gap-3 mb-8">
             <Sparkles className="text-teal-400 w-10 h-10 animate-pulse" />
-            <h2 className="text-4xl md:text-5xl font-black">Өнөөдрийн Урам Зориг</h2>
+            <h2 className="text-4xl md:text-5xl font-black">Мэдэхийг хүссэн сэдвийнхээ түлхүүр үгийг оруулна уу!</h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-12 bg-white/5 p-2 rounded-[32px] border border-white/10 backdrop-blur-md">
             <input 

@@ -2,16 +2,9 @@
 import { GoogleGenAI } from "@google/genai";
 
 export const getEncouragement = async (topic: string): Promise<string> => {
-  // process.env.API_KEY-г Vite define тохиргооноос шууд авна
-  const apiKey = process.env.API_KEY;
-
-  if (!apiKey || apiKey === "" || apiKey === "undefined") {
-    console.warn("API Key is currently empty or undefined. Please set the environment variable.");
-    return "Одоогоор AI систем холбогдоогүй байна. Та түр хүлээгээд дахин оролдоно уу.";
-  }
-
+  // Use process.env.API_KEY directly as per the coding guidelines
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

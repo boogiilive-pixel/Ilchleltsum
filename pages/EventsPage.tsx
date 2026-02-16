@@ -21,7 +21,8 @@ import {
   MessageSquare,
   Sparkles,
   Mail,
-  AlertCircle
+  AlertCircle,
+  Home
 } from 'lucide-react';
 import { Event } from '../types.ts';
 import { User, SUBMIT_URL, isValidEmail } from '../App.tsx';
@@ -29,18 +30,18 @@ import { User, SUBMIT_URL, isValidEmail } from '../App.tsx';
 const HEADER_IMAGE = "https://lh3.googleusercontent.com/d/1ai_6o6PLa0IwGChs8IrZx3eypRknz9bs";
 
 const EVENTS: Event[] = [
-  { id: '1', title: 'Библи судлал Онлайн', date: 'Лхагва гараг бүр', time: '18:30 PM', location: 'Онлайн', description: 'Бурханы үгийг хамтдаа гүнзгийрүүлэн судалж, сүнслэг мэдлэгээ тэлэх цаг.' },
-  { id: '2', title: 'Залбирлын цуглаан', date: 'Баасан гараг бүр', time: '18:30 PM', location: 'Сүмийн төв байр', description: 'Зүрх сэтгэлээ нэгтгэн Бурхантай ярилцах ариун мөч.' },
-  { id: '3', title: 'Хүндэтгэлийн цуглаан', date: 'Бямба гараг бүр', time: '10:00 AM', location: 'Сүмийн төв байр', description: 'Магтан хүндэтгэл, амьд сургаал номлолоор дамжуулан Бурханы ивээлд хамтдаа амрах өдөр.' }
+  { id: '1', title: 'Библи судлал Онлайн', date: 'Лхагва гараг бүр', time: '18:30 PM', location: 'Онлайн', description: 'Бурханы үгийг хамтдаа гүнзгийрүүлэн судалж, сүнслэг мэдлэгээ тэлэх цаг. Та бидэнрүү хүсэлт илгээснээр онлайн Библи судлалд оролцох боломжтой болох юм.' },
+  { id: '2', title: 'Залбирлын цуглаан', date: 'Баасан гараг бүр', time: '18:30 PM', location: 'Сүмийн төв байр', description: 'Залбирлын цуглаан бол амьдралын завгүй хэмнэлээс түр холдож, зүрх сэтгэлээ Бурханд нээх ариун цаг юм. Энэ бол талархал, гуйлт, нулимс бүгдийг нь Түүний өмнө авчрах мөч. Та бидэнтэй нэгдэж залбираарай!' },
+  { id: '3', title: 'Хүндэтгэлийн цуглаан', date: 'Бямба гараг бүр', time: '10:00 AM', location: 'Сүмийн төв байр', description: 'Шаббат цуглаан нь манай сүмийн байнгын тогтмол цуглаан бөгөөд бид магтан дуу, залбирал, сургаал номлол, Шаббат хичээл судлал, хүүхдийн хичээл, нөхөрлөлийн зоог зэргээр дамжуулан Бурхан дотор хамтдаа баярлан өнгөрүүлдэг.' }
 ];
 
 const MINISTRIES = [
   { icon: Heart, name: "Хүүхдийн үйлчлэл", desc: "Хүүхдүүдэд зориулсан Библийн хичээл болон тоглоомын цаг." },
   { icon: Users, name: "Залуучуудын үйлчлэл", desc: "Ахлах сургууль болон залуучуудын сүнслэг өсөлтөд зориулсан хөтөлбөр." },
-  { icon: Music, name: "Магтан хүндэтгэл", desc: "Авьяас чадвараа Бурханыг алдаршуулахад зориулж буй баг." },
+  { icon: Music, name: "Магтаалын үйлчлэл", desc: "Авьяас чадвараа Бурханыг алдаршуулахад зориулж буй баг." },
   { icon: BookOpen, name: "Библийн сургалт", desc: "Бурханы үгийг илүү гүнзгий судлахыг хүссэн хэн бүхэнд нээлттэй." },
-  { icon: ShieldCheck, name: "Залбирлын үйлчлэл", desc: "Бусдын болон улс орныхоо төлөө тогтмол залбирдаг баг." },
-  { icon: Coffee, name: "Угталт ба Үйлчилгээ", desc: "Цуглаанд ирсэн хүмүүсийг угтан авах, цай кофегоор үйлчлэх баг." }
+  { icon: HandHeart, name: "Залбирлын үйлчлэл", desc: "Танд залбируулах зүйл байгаа бол бидэнтэй холбогдоорой." },
+  { icon: Home, name: "Айлчлалын үйлчлэл", desc: "Хэрэв та сүмийн ахлагчийг гэртээ урьж залбируулахыг хүсэж байвал хүсэлтээ өгнө үү!" }
 ];
 
 const UniversalModal: React.FC<{
@@ -115,7 +116,7 @@ const UniversalModal: React.FC<{
             <div className="inline-flex items-center justify-center w-12 h-12 bg-teal-100 rounded-2xl text-teal-700 mb-4">
               {type === 'event' ? <Calendar className="w-6 h-6" /> : <Users className="w-6 h-6" />}
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">{type === 'event' ? 'Бүртгүүлэх' : 'Багт нэгдэх'}</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{type === 'event' ? 'Бүртгүүлэх' : 'Хүсэлт илгээх'}</h2>
             <p className="text-slate-500 mt-2 font-medium">"{title}" хүсэлт илгээх.</p>
           </div>
 
@@ -176,7 +177,7 @@ const EventsPage: React.FC<{ user?: User | null }> = ({ user = null }) => {
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-50"></div>
         </div>
         <div className="relative z-10 h-full max-w-7xl mx-auto px-4 flex flex-col justify-center pt-20">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-bold mb-6 backdrop-blur-md uppercase tracking-widest"><Sparkles className="w-4 h-4" /> Итгэлийн нэгдэл</div>
+          <div className="w-fit inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-bold mb-6 backdrop-blur-md uppercase tracking-widest"><Sparkles className="w-4 h-4" /> Итгэлийн нэгдэл</div>
           <h1 className="text-4xl md:text-7xl font-black text-white mb-6 leading-tight">Үйл ажиллагаа ба <br /> <span className="text-teal-400">Үйлчлэл</span></h1>
         </div>
       </section>
@@ -197,12 +198,25 @@ const EventsPage: React.FC<{ user?: User | null }> = ({ user = null }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {EVENTS.map((event) => (
               <div key={event.id} className="bg-white p-8 rounded-[40px] shadow-sm flex flex-col hover:shadow-2xl hover:-translate-y-2 transition-all border border-slate-100 group relative overflow-hidden">
-                <div className="relative z-10">
+                <div className="relative z-10 flex flex-col h-full">
                   <div className="inline-flex items-center justify-center w-14 h-14 bg-teal-50 text-teal-700 rounded-2xl mb-6 group-hover:bg-teal-700 group-hover:text-white transition-all">
                     {event.id === '1' ? <BookOpen /> : event.id === '2' ? <HandHeart /> : <Users />}
                   </div>
                   <h3 className="text-2xl font-black mb-4 text-slate-900">{event.title}</h3>
-                  <p className="text-slate-500 mb-8 font-medium line-clamp-3">{event.description}</p>
+                  
+                  {/* Өдөр болон Цагийн мэдээлэл */}
+                  <div className="flex flex-col gap-2 mb-6">
+                    <div className="flex items-center gap-3 text-teal-700 font-bold text-sm bg-teal-50/50 w-fit px-3 py-1.5 rounded-xl">
+                      <Calendar className="w-4 h-4" />
+                      {event.date}
+                    </div>
+                    <div className="flex items-center gap-3 text-slate-600 font-bold text-sm bg-slate-50 w-fit px-3 py-1.5 rounded-xl">
+                      <Clock className="w-4 h-4" />
+                      {event.time}
+                    </div>
+                  </div>
+
+                  <p className="text-slate-500 mb-8 font-medium flex-grow">{event.description}</p>
                   <button onClick={() => setSelectedTarget({title: event.title, type: 'event'})} className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-4 rounded-2xl font-bold hover:bg-teal-700 transition-all shadow-lg active:scale-95">Нэгдэх <ArrowRight className="w-5 h-5" /></button>
                 </div>
               </div>
@@ -218,7 +232,7 @@ const EventsPage: React.FC<{ user?: User | null }> = ({ user = null }) => {
                 <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-700 mb-6 group-hover:bg-teal-700 group-hover:text-white transition-all"><m.icon className="w-8 h-8" /></div>
                 <h3 className="text-2xl font-bold mb-4 text-slate-900">{m.name}</h3>
                 <p className="text-slate-600 mb-8 font-medium">{m.desc}</p>
-                <button onClick={() => setSelectedTarget({title: m.name, type: 'ministry'})} className="inline-flex items-center gap-2 text-teal-700 font-bold border-b-2 border-teal-100 hover:border-teal-700 transition-all uppercase tracking-widest text-xs">Багт нэгдэх <ArrowRight className="w-4 h-4" /></button>
+                <button onClick={() => setSelectedTarget({title: m.name, type: 'ministry'})} className="inline-flex items-center gap-2 text-teal-700 font-bold border-b-2 border-teal-100 hover:border-teal-700 transition-all uppercase tracking-widest text-xs">Хүсэлт илгээх <ArrowRight className="w-4 h-4" /></button>
               </div>
             ))}
           </div>

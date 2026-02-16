@@ -87,14 +87,6 @@ const ContactPage: React.FC = () => {
       color: "bg-blue-500"
     },
     {
-      icon: <Mail className="w-6 h-6" />,
-      title: "Имэйл бичих",
-      value: "info@ilchlelt.mn",
-      sub: "Бид 24 цагийн дотор хариулна",
-      link: "mailto:info@ilchlelt.mn",
-      color: "bg-teal-500"
-    },
-    {
       icon: <MessageCircle className="w-6 h-6" />,
       title: "Чат бичих",
       value: "Facebook Messenger",
@@ -121,9 +113,9 @@ const ContactPage: React.FC = () => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-stretch">
           {/* Info & Map Column */}
-          <div className={`lg:col-span-5 space-y-8 transition-all duration-1000 delay-300 transform ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
+          <div className={`lg:col-span-5 flex flex-col space-y-8 transition-all duration-1000 delay-300 transform ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
             
             <div className="grid grid-cols-1 gap-4">
               {contactCards.map((card, idx) => (
@@ -146,8 +138,8 @@ const ContactPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 relative group overflow-hidden">
-              <div className="relative z-10">
+            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 relative group overflow-hidden flex flex-col flex-grow">
+              <div className="relative z-10 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-teal-600 text-white rounded-xl flex items-center justify-center">
                     <MapPin className="w-5 h-5" />
@@ -160,26 +152,28 @@ const ContactPage: React.FC = () => {
                   Улаанбаатар хот, Монгол улс
                 </p>
 
-                <a 
-                  href={MAP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative h-64 rounded-3xl overflow-hidden border border-slate-100 shadow-inner group/map mb-6"
-                >
-                  <iframe 
-                    src={GOOGLE_MAPS_EMBED} 
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0, pointerEvents: 'none' }} 
-                    title="Map"
-                    className="group-hover/map:scale-105 transition-transform duration-700"
-                  ></iframe>
-                  <div className="absolute inset-0 bg-slate-900/0 group-hover/map:bg-slate-900/5 flex items-center justify-center transition-all">
-                    <div className="bg-white/95 backdrop-blur px-6 py-3 rounded-2xl shadow-xl font-semibold text-teal-700 flex items-center gap-2 opacity-0 group-hover/map:opacity-100 transition-opacity">
-                       <Navigation className="w-5 h-5" /> Газрын зурагт нээх
+                <div className="flex-grow flex flex-col mb-8">
+                  <a 
+                    href={MAP_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block relative flex-grow min-h-[200px] rounded-3xl overflow-hidden border border-slate-100 shadow-inner group/map"
+                  >
+                    <iframe 
+                      src={GOOGLE_MAPS_EMBED} 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 0, pointerEvents: 'none' }} 
+                      title="Map"
+                      className="group-hover/map:scale-105 transition-transform duration-700"
+                    ></iframe>
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover/map:bg-slate-900/5 flex items-center justify-center transition-all">
+                      <div className="bg-white/95 backdrop-blur px-6 py-3 rounded-2xl shadow-xl font-semibold text-teal-700 flex items-center gap-2 opacity-0 group-hover/map:opacity-100 transition-opacity">
+                        <Navigation className="w-5 h-5" /> Газрын зурагт нээх
+                      </div>
                     </div>
-                  </div>
-                </a>
+                  </a>
+                </div>
 
                 <a 
                   href={MAP_URL} 
@@ -195,10 +189,10 @@ const ContactPage: React.FC = () => {
 
           {/* Form Column */}
           <div className={`lg:col-span-7 transition-all duration-1000 delay-500 transform ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}>
-            <div className="bg-white p-8 md:p-14 rounded-[48px] shadow-sm border border-slate-100 relative">
+            <div className="bg-white p-8 md:p-14 rounded-[48px] shadow-sm border border-slate-100 relative h-full">
               {status === 'success' ? (
-                <div className="text-center py-20 animate-in zoom-in">
-                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mb-8 mx-auto">
+                <div className="text-center py-20 animate-in zoom-in h-full flex flex-col justify-center items-center">
+                  <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mb-8">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
                   <h2 className="text-3xl font-bold mb-4 text-slate-900">Баярлалаа!</h2>
@@ -211,7 +205,7 @@ const ContactPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="flex flex-col h-full">
                   <div className="flex items-center gap-4 mb-12">
                     <div className="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center">
                       <MessageCircle className="w-6 h-6" />
@@ -229,7 +223,7 @@ const ContactPage: React.FC = () => {
                     </div>
                   )}
                   
-                  <form className="space-y-8" onSubmit={handleSubmit}>
+                  <form className="space-y-8 flex-grow flex flex-col" onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-3 ml-1">Бүтэн нэр</label>
@@ -277,14 +271,14 @@ const ContactPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="flex-grow flex flex-col">
                       <label className="block text-sm font-semibold text-slate-700 mb-3 ml-1">Таны зурвас</label>
                       <textarea 
                         name="message" 
                         rows={5} 
                         value={formData.message} 
                         onChange={(e) => setFormData({...formData, message: e.target.value})} 
-                        className={`w-full px-6 py-5 rounded-3xl bg-slate-50 border ${error && formData.message.length < 5 ? 'border-red-300 ring-1 ring-red-50' : 'border-slate-100'} focus:bg-white focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 outline-none font-medium text-slate-900 transition-all resize-none`} 
+                        className={`w-full flex-grow px-6 py-5 rounded-3xl bg-slate-50 border ${error && formData.message.length < 5 ? 'border-red-300 ring-1 ring-red-50' : 'border-slate-100'} focus:bg-white focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500 outline-none font-medium text-slate-900 transition-all resize-none min-h-[150px]`} 
                         placeholder="Энд бичнэ үү..."
                       ></textarea>
                     </div>
@@ -292,7 +286,7 @@ const ContactPage: React.FC = () => {
                     <button 
                       type="submit" 
                       disabled={status === 'sending'} 
-                      className="group w-full py-5 bg-teal-700 text-white font-bold text-lg rounded-2xl hover:bg-slate-900 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-70"
+                      className="group w-full py-5 bg-teal-700 text-white font-bold text-lg rounded-2xl hover:bg-slate-900 transition-all shadow-xl flex items-center justify-center gap-3 active:scale-[0.99] disabled:opacity-70 mt-4"
                     >
                       {status === 'sending' ? (
                         <Loader2 className="w-6 h-6 animate-spin" />
@@ -304,14 +298,14 @@ const ContactPage: React.FC = () => {
                       )}
                     </button>
                   </form>
-                </>
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -319,7 +313,7 @@ const ContactPage: React.FC = () => {
         .animate-spin-slow {
           animation: spin-slow 12s linear infinite;
         }
-      `}</style>
+      ` }} />
     </div>
   );
 };

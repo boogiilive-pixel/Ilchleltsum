@@ -31,6 +31,7 @@ import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
 import MinistryPage from './pages/MinistryPage.tsx';
+import TestimonialSection from './components/TestimonialSection.tsx';
 
 // --- CONFIGURATION ---
 export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui6OvCxuYLTlBeh7vj5CHCEn43T5Zp4dSAEPtpbS2iEg0lLtzURzjRIR/exec"; 
@@ -39,6 +40,16 @@ export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui
 export const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
+
+// Global Nav Links
+const NAV_LINKS = [
+  { name: 'Нүүр', path: '/' },
+  { name: 'Сургаал', path: '/sermons' },
+  { name: 'Мэдээлэл', path: '/info' },
+  { name: 'Үйл ажиллагаа', path: '/events' },
+  { name: 'Хандив', path: '/donation' },
+  { name: 'Холбоо барих', path: '/contact' },
+];
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -217,15 +228,6 @@ const Navbar: React.FC<{
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Нүүр', path: '/', icon: Home },
-    { name: 'Сургаал', path: '/sermons', icon: PlayCircle },
-    { name: 'Мэдээлэл', path: '/info', icon: Newspaper },
-    { name: 'Үйл ажиллагаа', path: '/events', icon: Calendar },
-    { name: 'Хандив', path: '/donation', icon: Coins },
-    { name: 'Холбоо барих', path: '/contact', icon: Phone },
-  ];
-
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-nav shadow-md py-2' : 'bg-transparent py-4'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
@@ -237,7 +239,7 @@ const Navbar: React.FC<{
           </div>
         </Link>
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
-          {navLinks.map((link) => (
+          {NAV_LINKS.map((link) => (
             <Link key={link.path} to={link.path} className={`font-semibold text-sm transition-all hover:-translate-y-0.5 ${location.pathname === link.path ? 'text-teal-700 underline underline-offset-8 decoration-2' : 'text-slate-600 hover:text-teal-700'}`}>{link.name}</Link>
           ))}
           {user ? (
@@ -253,7 +255,7 @@ const Navbar: React.FC<{
       </div>
       {isOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 p-4 flex flex-col gap-2 shadow-2xl">
-          {navLinks.map((link) => (
+          {NAV_LINKS.map((link) => (
             <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl font-bold ${location.pathname === link.path ? 'bg-teal-50 text-teal-700' : 'text-slate-700'}`}>{link.name}</Link>
           ))}
           {!user && <button onClick={() => { setIsOpen(false); onAuthClick(); }} className="mt-2 w-full py-4 bg-teal-700 text-white font-bold rounded-xl">Нэгдэх</button>}
@@ -350,7 +352,7 @@ const Footer: React.FC = () => {
             <AdventistLogo className="w-16 h-16" />
             <div className="flex flex-col text-white"><span className="text-xl font-bold">Илчлэлт Сүм</span><span className="text-xs uppercase tracking-widest text-teal-400 font-bold">Revelation Church</span></div>
           </div>
-          <p className="mb-8 max-w-sm leading-relaxed text-slate-400">Бид Есүс Христийн сайн мэдээг түгээж, нийгэмдээ гэрэл болох зорилготой Долоо дахь өдрийн Адвентист сүм юм.</p>
+          <p className="mb-8 max-w-sm leading-relaxed text-slate-400">Бид зөвхөн Библид суурьтай үнэнийг түгээж, Гурван тэнгэрэлчийн мэдээг тунхаглаж, нийгэмдээ гэрэл, давс болох зорилготой Долоо дахь өдрийн Адвентист сүм юм.</p>
           <div className="flex gap-4">
             <a href="https://www.facebook.com/ilchleltsum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all text-white"><Facebook className="w-5 h-5" /></a>
             <a href="https://www.youtube.com/@ilchlelt" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all text-white"><Youtube className="w-5 h-5" /></a>
@@ -359,8 +361,12 @@ const Footer: React.FC = () => {
         <div>
           <h4 className="text-white font-bold mb-6 text-lg">Холбоосууд</h4>
           <ul className="space-y-3">
-            {['/sermons', '/info', '/events', '/donation', '/contact'].map(path => (
-              <li key={path}><Link to={path} className="hover:text-teal-400 transition-colors uppercase text-xs font-bold tracking-widest">{path.replace('/', '') || 'нүүр'}</Link></li>
+            {NAV_LINKS.map(link => (
+              <li key={link.path}>
+                <Link to={link.path} className="hover:text-teal-400 transition-colors uppercase text-xs font-bold tracking-widest">
+                  {link.name}
+                </Link>
+              </li>
             ))}
           </ul>
         </div>
@@ -397,6 +403,7 @@ const AppContent: React.FC = () => {
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
       </main>
+      <TestimonialSection />
       <ScrollToTopButton />
       <Footer />
     </div>

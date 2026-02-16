@@ -25,14 +25,15 @@ import MinistryPage from './pages/MinistryPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 
-const AdventistLogo = ({ className = "w-12 h-12" }) => (
-  <div className={`${className} bg-[#235d5e] rounded-full flex items-center justify-center p-1.5 shadow-md overflow-hidden transition-transform hover:scale-105`}>
+// Official-looking SDA Logo SVG
+export const AdventistLogo = ({ className = "w-12 h-12" }) => (
+  <div className={`${className} bg-teal-800 rounded-2xl flex items-center justify-center p-1.5 shadow-lg transition-transform hover:scale-105 overflow-hidden`}>
     <svg viewBox="0 0 100 100" className="w-full h-full text-white fill-current">
-      <path d="M50 20c-5.5 0-10.4 4.5-10.4 10s4.9 10 10.4 10 10.4-4.5 10.4-10-4.9-10-10.4-10zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z" />
-      <path d="M50 45c-15 0-25 10-25 25h5c0-12 8-20 20-20s20 8 20 20h5c0-15-10-25-25-25z" />
-      <path d="M47.5 55h5v30h-5z" />
-      <path d="M40 70h20v5H40z" />
-      <path d="M50 10c22.1 0 40 17.9 40 40s-17.9 40-40 40S10 72.1 10 50 27.9 10 50 10m0-2C23.5 8 2 29.5 2 56s21.5 48 48 48 48-21.5 48-48S76.5 8 50 8z" opacity="0.1" />
+      <path d="M50 10c-1.5 0-3 .5-4.2 1.5-6.5 5.5-12.8 14-12.8 24.5 0 12.5 9 20 17 20s17-7.5 17-20c0-10.5-6.3-19-12.8-24.5-1.2-1-2.7-1.5-4.2-1.5zm0 41c-5.5 0-11-5.5-11-15s5.5-18.5 11-23c5.5 4.5 11 13.5 11 23s-5.5 15-11 15z" />
+      <path d="M25 65c0-10 10-15 25-15s25 5 25 15v5H25v-5z" opacity="0.6" />
+      <path d="M48 45h4v45h-4z" />
+      <path d="M35 60h30v4H35z" />
+      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.2" />
     </svg>
   </div>
 );

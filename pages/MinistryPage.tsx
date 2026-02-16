@@ -187,7 +187,7 @@ const MinistryPage: React.FC = () => {
 
         <section className="mt-24 rounded-[48px] overflow-hidden relative shadow-2xl group">
           <img 
-            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80" 
+            src="https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS" 
             alt="Join Ministry" 
             className="w-full h-[500px] object-cover brightness-[0.4] transition-transform duration-[2s] group-hover:scale-110"
           />

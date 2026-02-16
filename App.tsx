@@ -25,16 +25,19 @@ import MinistryPage from './pages/MinistryPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 
-// Official-looking SDA Logo SVG
+// Official Church Logo from the provided Google Drive link
 export const AdventistLogo = ({ className = "w-12 h-12" }) => (
-  <div className={`${className} bg-teal-800 rounded-2xl flex items-center justify-center p-1.5 shadow-lg transition-transform hover:scale-105 overflow-hidden`}>
-    <svg viewBox="0 0 100 100" className="w-full h-full text-white fill-current">
-      <path d="M50 10c-1.5 0-3 .5-4.2 1.5-6.5 5.5-12.8 14-12.8 24.5 0 12.5 9 20 17 20s17-7.5 17-20c0-10.5-6.3-19-12.8-24.5-1.2-1-2.7-1.5-4.2-1.5zm0 41c-5.5 0-11-5.5-11-15s5.5-18.5 11-23c5.5 4.5 11 13.5 11 23s-5.5 15-11 15z" />
-      <path d="M25 65c0-10 10-15 25-15s25 5 25 15v5H25v-5z" opacity="0.6" />
-      <path d="M48 45h4v45h-4z" />
-      <path d="M35 60h30v4H35z" />
-      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.2" />
-    </svg>
+  <div className={`${className} flex items-center justify-center overflow-hidden transition-transform hover:scale-105`}>
+    <img 
+      src="https://lh3.googleusercontent.com/d/1iVLnofMfCzcUFC5D-jmNz7zUNonArK9K" 
+      alt="Илчлэлт Сүм" 
+      className="w-full h-full object-contain drop-shadow-md"
+      onError={(e) => {
+        // Fallback in case image fails
+        const target = e.target as HTMLImageElement;
+        target.src = "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=100&q=80";
+      }}
+    />
   </div>
 );
 

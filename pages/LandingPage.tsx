@@ -19,16 +19,18 @@ import {
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
 
+// Updated Gallery Images with user-provided links
 const GALLERY_IMAGES = [
-  { url: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=800&q=80", title: "Нөхөрлөлийн цаг", size: "large" },
-  { url: "https://images.unsplash.com/photo-1510590337019-5ef8d3d32116?auto=format&fit=crop&w=600&q=80", title: "Магтан хүндэтгэл", size: "small" },
-  { url: "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=600&q=80", title: "Залбирлын мөч", size: "small" },
-  { url: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80", title: "Манай хамт олон", size: "wide" },
-  { url: "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&w=600&q=80", title: "Библийн хичээл", size: "small" },
-  { url: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=600&q=80", title: "Хайрын үйлчлэл", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1ZIMzIMa8QEKPit2qFDouDv_U3IONc9vl", title: "Цуглааны танхим", size: "large" },
+  { url: "https://lh3.googleusercontent.com/d/1uuV-NXIdLfgFXIqbOmaY6Au2nsCIA-Yg", title: "Магтан хүндэтгэл", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1UcUf8ZJnG6RkzkBQbX8N4ezfRjgkb8X0", title: "Нөхөрлөлийн мөч", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/14od8umGX-lk8HS5pWYk6hySdde5-hSrD", title: "Бидний гэр бүл", size: "wide" },
+  { url: "https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS", title: "Залбирлын цаг", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1g6RH4xBAVfhCPoD2HooPHXPDCPhv1KFr", title: "Хайрын үйлчлэл", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1gYlQPTDDuE3qfUSQIL-9pxJvLJztzGpD", title: "Сүнслэг өсөлт", size: "small" },
 ];
 
-const HERO_IMAGE_URL = "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1920&q=80";
+const HERO_IMAGE_URL = "https://lh3.googleusercontent.com/d/1ZIMzIMa8QEKPit2qFDouDv_U3IONc9vl";
 
 const LandingPage: React.FC = () => {
   const [topic, setTopic] = useState('');
@@ -109,11 +111,11 @@ const LandingPage: React.FC = () => {
             Тавтай морил
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight tracking-tight text-shadow-xl">
             Гэрэл ба Хайрын <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">Өргөө</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-lg">
+          <p className="text-xl md:text-2xl text-slate-200 mb-12 max-w-2xl mx-auto leading-relaxed font-medium drop-shadow-2xl">
             Илчлэлт сүм нь таны амьдралд утга учир, итгэл найдвар бэлэглэх халуун дулаан гэр бүл юм.
           </p>
           

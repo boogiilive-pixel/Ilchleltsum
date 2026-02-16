@@ -32,6 +32,7 @@ import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
 import MinistryPage from './pages/MinistryPage.tsx';
 import TestimonialSection from './components/TestimonialSection.tsx';
+import MouseFollower from './components/MouseFollower.tsx';
 
 // --- CONFIGURATION ---
 export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui6OvCxuYLTlBeh7vj5CHCEn43T5Zp4dSAEPtpbS2iEg0lLtzURzjRIR/exec"; 
@@ -390,6 +391,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col relative">
+      <MouseFollower />
       <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
       <main className="flex-grow">

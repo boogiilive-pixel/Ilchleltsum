@@ -22,7 +22,6 @@ import {
 import LandingPage from './pages/LandingPage.tsx';
 import SermonPage from './pages/SermonPage.tsx';
 import EventsPage from './pages/EventsPage.tsx';
-import MinistryPage from './pages/MinistryPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
@@ -136,7 +135,6 @@ const Navbar: React.FC<{
     { name: 'Сургаал', path: '/sermons', icon: PlayCircle },
     { name: 'Мэдээлэл', path: '/info', icon: Newspaper },
     { name: 'Үйл ажиллагаа', path: '/events', icon: Calendar },
-    { name: 'Үйлчлэлүүд', path: '/ministries', icon: Users },
     { name: 'Хандив', path: '/donation', icon: Coins },
     { name: 'Холбоо барих', path: '/contact', icon: Phone },
   ];
@@ -183,7 +181,6 @@ const Footer: React.FC = () => {
     { path: '/sermons', name: 'Сургаалууд' },
     { path: '/info', name: 'Мэдээлэл' },
     { path: '/events', name: 'Үйл ажиллагаа' },
-    { path: '/ministries', name: 'Үйлчлэлүүд' },
     { path: '/donation', name: 'Хандив' },
     { path: '/contact', name: 'Холбоо барих' },
   ];
@@ -252,7 +249,6 @@ const AppContent: React.FC = () => {
           <Route path="/sermons" element={<SermonPage />} />
           <Route path="/info" element={<InfoPage />} />
           <Route path="/events" element={<EventsPage />} />
-          <Route path="/ministries" element={<MinistryPage />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>

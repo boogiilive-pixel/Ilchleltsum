@@ -45,19 +45,32 @@ const GALLERY_IMAGES = [
   { url: "https://lh3.googleusercontent.com/d/14od8umGX-lk8HS5pWYk6hySdde5-hSrD", title: "Бидний гэр бүл", size: "wide" },
   { url: "https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS", title: "Залбирлын цаг", size: "small" },
   { url: "https://lh3.googleusercontent.com/d/1g6RH4xBAVfhCPoD2HooPHXPDCPhv1KFr", title: "Хайрын үйлчлэл", size: "small" },
-  { url: "https://lh3.googleusercontent.com/d/1gYlQPTDDuE3qfUSQIL-9pxJvLJztzGpD", title: "Сүнслэг өсөлт", size: "small" },
+  { url: "https://lh3.googleusercontent.com/d/1gYlQPTDDuE3qVUSQIL-9pxJvLJztzGpD", title: "Сүнслэг өсөлт", size: "small" },
 ];
 
-const HERO_IMAGE_URL = "https://lh3.googleusercontent.com/d/1ZIMzIMa8QEKPit2qFDouDv_U3IONc9vl";
+const HERO_IMAGES = [
+  "https://lh3.googleusercontent.com/d/1gGeh1RSaePY_593z_DebADDa4Nn_oWUS",
+  "https://lh3.googleusercontent.com/d/14od8umGX-lk8HS5pWYk6hySdde5-hSrD",
+  "https://lh3.googleusercontent.com/d/1ZIMzIMa8QEKPit2qFDouDv_U3IONc9vl"
+];
 
 const LandingPage: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [encouragement, setEncouragement] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
+  const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
   
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
+
+  // Auto-slide hero images
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!heroRef.current) return;
@@ -95,30 +108,39 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="overflow-x-hidden">
-      {/* Hero Section */}
+      {/* Hero Section with Image Slider */}
       <section 
         ref={heroRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="relative h-screen flex items-center justify-center overflow-hidden bg-slate-900"
+        className="relative h-screen flex items-center justify-center overflow-hidden bg-slate-950"
       >
-        <div 
-          className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110"
-          style={{ 
-            transform: `translate(${mousePos.x * -20}px, ${mousePos.y * -20}px)`,
-          }}
-        >
-          <img 
-            src={HERO_IMAGE_URL} 
-            alt="Church Background" 
-            className="w-full h-full object-cover opacity-60 brightness-50"
-          />
-        </div>
+        {/* Background Slider */}
+        {HERO_IMAGES.map((url, idx) => (
+          <div 
+            key={idx}
+            className={`absolute inset-0 z-0 transition-opacity duration-1000 ease-in-out ${idx === currentHeroIdx ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <div 
+              className="w-full h-full transition-transform duration-700 ease-out scale-110"
+              style={{ 
+                transform: `translate(${mousePos.x * -20}px, ${mousePos.y * -20}px)`,
+              }}
+            >
+              <img 
+                src={url} 
+                alt={`Church Background ${idx + 1}`} 
+                className="w-full h-full object-cover opacity-50 brightness-[0.4]"
+              />
+            </div>
+          </div>
+        ))}
 
+        {/* Global Lighting Overlay */}
         <div 
           className="absolute inset-0 z-[1] pointer-events-none transition-opacity duration-500"
           style={{
-            background: `radial-gradient(circle at ${(mousePos.x + 1) * 50}% ${(mousePos.y + 1) * 50}%, rgba(20, 184, 166, 0.15) 0%, transparent 50%)`
+            background: `radial-gradient(circle at ${(mousePos.x + 1) * 50}% ${(mousePos.y + 1) * 50}%, rgba(20, 184, 166, 0.1) 0%, transparent 60%)`
           }}
         ></div>
 
@@ -149,6 +171,17 @@ const LandingPage: React.FC = () => {
               Сургаал үзэх
             </Link>
           </div>
+
+          {/* Slider Indicators */}
+          <div className="absolute bottom-[-100px] left-1/2 -translate-x-1/2 flex gap-3">
+            {HERO_IMAGES.map((_, idx) => (
+              <button 
+                key={idx}
+                onClick={() => setCurrentHeroIdx(idx)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${idx === currentHeroIdx ? 'bg-teal-500 w-8' : 'bg-white/20'}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
@@ -157,7 +190,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900">Бидний Үйлчлэлүүд</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Бид бүх насны хүмүүст зориулсан олон төрлийн үйл ажиллагаа явуuldэг.</p>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg">Бид бүх насны хүмүүст зориулсан олон төрлийн үйл ажиллагаа явуулдаг.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[

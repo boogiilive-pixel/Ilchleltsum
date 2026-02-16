@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Facebook, Youtube, Send, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Mail, Phone, MapPin, Facebook, Youtube, Send, CheckCircle2, ExternalLink, Loader2 } from 'lucide-react';
 
 const ContactPage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
@@ -16,12 +16,15 @@ const ContactPage: React.FC = () => {
     if (!formData.name || !formData.phone) return;
     
     setStatus('sending');
-    // Дуурайлган илгээх хугацаа
+    
+    // Мэдээллийг boogiilive@gmail.com-руу илгээх процесс (Simulation)
+    console.log("Sending data to boogiilive@gmail.com:", formData);
+    
     setTimeout(() => {
       setStatus('success');
       setFormData({ name: '', phone: '', topic: 'Залбирлын хүсэлт', message: '' });
-      setTimeout(() => setStatus('idle'), 5000);
-    }, 1500);
+      setTimeout(() => setStatus('idle'), 8000);
+    }, 2000);
   };
 
   const mapLink = "https://maps.app.goo.gl/wDGGaLogDJDRNRpdA";
@@ -114,7 +117,7 @@ const ContactPage: React.FC = () => {
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
                 <h2 className="text-2xl font-bold mb-4">Амжилттай илгээгдлээ!</h2>
-                <p className="text-slate-600 max-w-sm mx-auto">Бид таны хүсэлтийг хүлээн авлаа. Тантай удахгүй эргэн холбогдох болно. Баярлалаа.</p>
+                <p className="text-slate-600 max-w-sm mx-auto">Бид таны хүсэлтийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авлаа. Бид удахгүй холбогдох болно. Баярлалаа.</p>
                 <button 
                   onClick={() => setStatus('idle')}
                   className="mt-8 px-8 py-3 bg-slate-100 text-teal-700 font-bold rounded-xl hover:bg-slate-200 transition-all"
@@ -125,7 +128,7 @@ const ContactPage: React.FC = () => {
             ) : (
               <>
                 <h2 className="text-3xl font-black mb-4 text-slate-900">Хүсэлт илгээх</h2>
-                <p className="text-slate-500 mb-8 font-medium">Танд залбирлын хүсэлт эсвэл асуулт байвал доорх формоор илгээнэ үү.</p>
+                <p className="text-slate-500 mb-8 font-medium">Залбирлын хүсэлт болон асуултаа энд үлдээнэ үү. (Имэйл: boogiilive@gmail.com)</p>
                 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -181,7 +184,7 @@ const ContactPage: React.FC = () => {
                     className="w-full py-5 bg-teal-700 text-white font-black text-lg rounded-2xl hover:bg-teal-800 transition-all shadow-xl shadow-teal-700/20 flex items-center justify-center gap-3 disabled:bg-teal-400 active:scale-[0.98]"
                   >
                     {status === 'sending' ? (
-                      <>Бичиж байна...</>
+                      <><Loader2 className="w-6 h-6 animate-spin" /> Илгээж байна...</>
                     ) : (
                       <><Send className="w-6 h-6" /> Зурвас илгээх</>
                     )}

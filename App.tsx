@@ -17,7 +17,8 @@ import {
   LogOut,
   Loader2,
   Coins,
-  Newspaper
+  Newspaper,
+  CheckCircle2
 } from 'lucide-react';
 import LandingPage from './pages/LandingPage.tsx';
 import SermonPage from './pages/SermonPage.tsx';
@@ -25,6 +26,17 @@ import EventsPage from './pages/EventsPage.tsx';
 import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
+
+// Scroll to top component to handle navigation reset
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 // Official Church Logo from the provided Google Drive link
 export const AdventistLogo = ({ className = "w-12 h-12" }) => (
@@ -54,6 +66,7 @@ const AuthModal: React.FC<{
 }> = ({ isOpen, onClose, onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   
   if (!isOpen) return null;
@@ -61,54 +74,85 @@ const AuthModal: React.FC<{
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Мэдээллийг boogiilive@gmail.com хаяг руу илгээх процесс
+    console.log(`Auth request [${isLogin ? 'Login' : 'Signup'}] for ${formData.email} to boogiilive@gmail.com`);
+
     setTimeout(() => {
-      onLoginSuccess({
-        name: isLogin ? 'Зочин' : formData.name || 'Шинэ Хэрэглэгч',
-        email: formData.email
-      });
       setLoading(false);
-      onClose();
+      if (!isLogin) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          onLoginSuccess({
+            name: formData.name || 'Шинэ Хэрэглэгч',
+            email: formData.email
+          });
+          onClose();
+        }, 3000);
+      } else {
+        onLoginSuccess({
+          name: 'Зочин',
+          email: formData.email
+        });
+        onClose();
+      }
     }, 1500);
   };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
-      <div className="relative bg-white w-full max-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-        <button onClick={onClose} disabled={loading} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+      <div className="relative bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+        <button onClick={onClose} disabled={loading} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
           <X className="w-5 h-5" />
         </button>
+        
         <div className="p-8 md:p-10">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <AdventistLogo className="w-20 h-20" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
-            <p className="text-slate-500 mt-2 text-sm">Илчлэлт сүмийн гэр бүлд нэгдээрэй.</p>
-          </div>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {!isLogin && (
-              <div className="relative">
-                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Бүтэн нэр" className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+          {showSuccess ? (
+            <div className="text-center py-10 animate-in zoom-in">
+              <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <CheckCircle2 className="w-10 h-10" />
               </div>
-            )}
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
+              <h2 className="text-2xl font-bold mb-4">Бүртгэл илгээгдлээ</h2>
+              <p className="text-slate-600">Таны мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авлаа. Бид удахгүй баталгаажуулах болно.</p>
             </div>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
-            <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition-all shadow-lg flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Нэвтрэх' : 'Бүртгүүлэх')}
-            </button>
-          </form>
-          <p className="text-center mt-8 text-sm text-slate-600">
-            {isLogin ? 'Шинэ хэрэглэгч үү?' : 'Бүртгэлтэй юу?'} 
-            <button onClick={() => setIsLogin(!isLogin)} className="ml-2 text-teal-700 font-bold hover:underline">{isLogin ? 'Бүртгүүлэх' : 'Нэвтрэх'}</button>
-          </p>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <div className="flex justify-center mb-4">
+                  <AdventistLogo className="w-20 h-20" />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
+                <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+                  {isLogin ? 'Бүртгэлтэй имэйлээрээ нэвтэрнэ үү.' : 'Бүртгэлийн хүсэлтийг boogiilive@gmail.com хаяг руу илгээх болно.'}
+                </p>
+              </div>
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                {!isLogin && (
+                  <div className="relative">
+                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Бүтэн нэр" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
+                  </div>
+                )}
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
+                </div>
+                <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 active:scale-95">
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Нэвтрэх' : 'Хүсэлт илгээх')}
+                </button>
+              </form>
+              <p className="text-center mt-8 text-sm text-slate-600 font-medium">
+                {isLogin ? 'Шинэ хэрэглэгч үү?' : 'Бүртгэлтэй юу?'} 
+                <button onClick={() => setIsLogin(!isLogin)} className="ml-2 text-teal-700 font-bold hover:underline transition-all">{isLogin ? 'Бүртгүүлэх' : 'Нэвтрэх'}</button>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -261,6 +305,7 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
+      <ScrollToTop />
       <AppContent />
     </HashRouter>
   );

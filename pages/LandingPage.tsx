@@ -151,7 +151,7 @@ const LandingPage: React.FC = () => {
                 </div>
                 <h3 className="text-2xl font-bold mb-4 text-slate-900">{service.title}</h3>
                 <p className="text-slate-600 mb-8 leading-relaxed">{service.desc}</p>
-                <Link to="/ministries" className="inline-flex items-center gap-2 font-bold text-teal-700 hover:gap-4 transition-all group-hover:text-teal-800">
+                <Link to="/events" className="inline-flex items-center gap-2 font-bold text-teal-700 hover:gap-4 transition-all group-hover:text-teal-800">
                   Дэлгэрэнгүй <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>

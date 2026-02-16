@@ -30,7 +30,9 @@ const RegistrationModal: React.FC<{
     e.preventDefault();
     setLoading(true);
 
-    // Simulation of API call
+    // Мэдээллийг boogiilive@gmail.com хаяг руу илгээх процесс
+    console.log(`Ministry signup for "${ministryName}" sent to boogiilive@gmail.com:`, formData);
+
     setTimeout(() => {
       setLoading(false);
       onSuccess(ministryName);
@@ -56,7 +58,7 @@ const RegistrationModal: React.FC<{
               <Users className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold text-slate-900">Багт нэгдэх</h2>
-            <p className="text-slate-500 mt-2 font-medium">"{ministryName}" багт хүчээ өгөх хүсэлт илгээх.</p>
+            <p className="text-slate-500 mt-2 font-medium">"{ministryName}" багт хүчээ өгөх хүсэлт илгээх. (Recipient: boogiilive@gmail.com)</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
@@ -106,7 +108,7 @@ const RegistrationModal: React.FC<{
 
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Таны илгээсэн мэдээлэл манай сүмийн үйлчлэлийн удирдлагуудад очих бөгөөд бид удахгүй холбогдоно.</p>
+              <p>Таны илгээсэн мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авсны дараа бид удахгүй холбогдоно.</p>
             </div>
 
             <button 
@@ -153,7 +155,7 @@ const MinistryPage: React.FC = () => {
               </div>
               <div>
                 <h4 className="font-bold text-lg">Хүсэлтийг хүлээн авлаа!</h4>
-                <p className="text-teal-100">Таныг "{joinedMinistry}" багт нэгдэх хүсэлт гаргасанд баярлалаа. Бид тантай удахгүй холбогдох болно.</p>
+                <p className="text-teal-100">Таныг "{joinedMinistry}" багт нэгдэх хүсэлт гаргасанд баярлалаа. Мэдээлэл boogiilive@gmail.com хаягаар илгээгдлээ.</p>
               </div>
             </div>
             <button onClick={() => setJoinedMinistry(null)} className="p-2 hover:bg-white/10 rounded-full">

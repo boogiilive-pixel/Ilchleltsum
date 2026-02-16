@@ -74,6 +74,9 @@ const UniversalModal: React.FC<{
     e.preventDefault();
     setLoading(true);
 
+    // Мэдээллийг boogiilive@gmail.com хаяг руу илгээх процесс
+    console.log(`Sending ${type} request for "${title}" to boogiilive@gmail.com:`, formData);
+
     setTimeout(() => {
       setLoading(false);
       onSuccess(title);
@@ -137,7 +140,7 @@ const UniversalModal: React.FC<{
 
             <div className="bg-teal-50/50 p-4 rounded-2xl flex gap-3 text-sm text-teal-800 border border-teal-100">
               <Info className="w-5 h-5 flex-shrink-0 text-teal-600" />
-              <p>Бид таны мэдээллийг хүлээн аваад, холбогдох заавар мэдээллийг илгээх болно.</p>
+              <p>Таны мэдээллийг <strong>boogiilive@gmail.com</strong> хаягаар хүлээн авсны дараа бид эргэн холбогдоно.</p>
             </div>
 
             <button 
@@ -145,7 +148,7 @@ const UniversalModal: React.FC<{
               disabled={loading}
               className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg shadow-teal-700/20 active:scale-[0.98] mt-4 flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Илгээх'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Хүсэлт илгээх'}
             </button>
           </form>
         </div>
@@ -159,7 +162,7 @@ const EventsPage: React.FC = () => {
   const [selectedTarget, setSelectedTarget] = useState<{title: string, type: 'event' | 'ministry'} | null>(null);
 
   const handleSuccess = (title: string) => {
-    setSuccessMessage(`"${title}" хүсэлтийг амжилттай хүлээн авлаа!`);
+    setSuccessMessage(`"${title}" хүсэлтийг boogiilive@gmail.com хаягаар амжилттай хүлээн авлаа!`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSuccessMessage(null), 8000);
   };

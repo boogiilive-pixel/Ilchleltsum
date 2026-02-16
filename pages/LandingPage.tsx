@@ -15,9 +15,13 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Newspaper,
+  User as UserIcon,
+  Clock
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
+import { POSTS } from './InfoPage';
 
 // Updated Gallery Images with user-provided links
 const GALLERY_IMAGES = [
@@ -152,9 +156,55 @@ const LandingPage: React.FC = () => {
                 <h3 className="text-2xl font-bold mb-4 text-slate-900">{service.title}</h3>
                 <p className="text-slate-600 mb-8 leading-relaxed">{service.desc}</p>
                 <Link to="/events" className="inline-flex items-center gap-2 font-bold text-teal-700 hover:gap-4 transition-all group-hover:text-teal-800">
-                  Дэлгэрэнгүй <ArrowRight className="w-5 h-5" />
+                  Дэлгэрэрийн <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest News Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 text-teal-600 font-bold uppercase tracking-widest text-sm mb-4">
+                <Newspaper className="w-5 h-5" /> Сүмийн амьдрал
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Сүүлийн үеийн <span className="text-teal-600">мэдээ</span></h2>
+            </div>
+            <Link to="/info" className="flex items-center gap-2 px-8 py-4 bg-slate-50 text-teal-700 font-bold rounded-2xl hover:bg-teal-100 transition-all border border-slate-100 shadow-sm group">
+              Бүх мэдээ <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {POSTS.slice(0, 3).map((post) => (
+              <Link 
+                key={post.id} 
+                to="/info" 
+                className="group flex flex-col bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+              >
+                <div className="h-60 overflow-hidden relative">
+                  <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-teal-800 shadow-lg">{post.category}</span>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {post.date}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                    <span className="flex items-center gap-1.5"><UserIcon className="w-3.5 h-3.5" /> {post.author}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2 group-hover:text-teal-700 transition-colors leading-tight">{post.title}</h3>
+                  <p className="text-slate-500 mb-6 line-clamp-2 text-sm leading-relaxed">{post.excerpt}</p>
+                  <div className="pt-6 border-t border-slate-50 flex items-center text-teal-700 font-bold text-sm">
+                    Дэлгэрэнгүй унших <ArrowRight className="w-4 h-4 ml-2 group-hover:ml-4 transition-all" />
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

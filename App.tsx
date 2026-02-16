@@ -54,7 +54,7 @@ export const AdventistLogo = ({ className = "w-12 h-12" }) => (
   </div>
 );
 
-interface User {
+export interface User {
   name: string;
   email: string;
 }
@@ -89,10 +89,10 @@ const AuthModal: React.FC<{
             email: formData.email
           });
           onClose();
-        }, 3000);
+        }, 2000);
       } else {
         onLoginSuccess({
-          name: 'Зочин',
+          name: formData.name || 'Зочин', // Хэрэглэгчийн оруулсан нэрийг авна
           email: formData.email
         });
         onClose();
@@ -101,7 +101,7 @@ const AuthModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
       <div className="relative bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
         <button onClick={onClose} disabled={loading} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
@@ -125,23 +125,29 @@ const AuthModal: React.FC<{
                 </div>
                 <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
                 <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-                  {isLogin ? 'Бүртгэлтэй имэйлээрээ нэвтэрнэ үү.' : 'Бүртгэлийн хүсэлтийг boogiilive@gmail.com хаяг руу илгээх болно.'}
+                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бүртгэлийн хүсэлтийг boogiilive@gmail.com хаяг руу илгээх болно.'}
                 </p>
               </div>
               <form className="space-y-4" onSubmit={handleSubmit}>
-                {!isLogin && (
-                  <div className="relative">
-                    <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Бүтэн нэр" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
-                  </div>
-                )}
+                <div className="relative">
+                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input 
+                    type="text" 
+                    required 
+                    disabled={loading} 
+                    value={formData.name} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                    placeholder="Таны нэр" 
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" 
+                  />
+                </div>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
+                  <input type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium" />
+                  <input type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
                 </div>
                 <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 active:scale-95">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Нэвтрэх' : 'Хүсэлт илгээх')}
@@ -291,7 +297,7 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/sermons" element={<SermonPage />} />
-          <Route path="/info" element={<InfoPage />} />
+          <Route path="/info" element={<InfoPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/contact" element={<ContactPage />} />

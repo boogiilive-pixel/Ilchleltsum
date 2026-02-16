@@ -19,9 +19,12 @@ import {
   Coffee,
   ShieldCheck,
   Heart,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 import { Event } from '../types';
+
+const HEADER_IMAGE = "https://lh3.googleusercontent.com/d/1ai_6o6PLa0IwGChs8IrZx3eypRknz9bs";
 
 const EVENTS: Event[] = [
   {
@@ -85,7 +88,7 @@ const UniversalModal: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
       <div className="relative bg-white w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
         <button 
@@ -168,14 +171,41 @@ const EventsPage: React.FC = () => {
   };
 
   return (
-    <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Header Section */}
-        <header className="mb-16">
-          <h1 className="text-4xl md:text-5xl font-black mb-4 text-slate-900">Үйл ажиллагаа ба Үйлчлэл</h1>
-          <p className="text-slate-600 text-lg md:text-xl max-w-2xl">Сүмийн тогтмол цуглаанууд болон таны хүчээ өгөх боломжтой үйлчлэлийн багууд.</p>
-        </header>
+    <div className="pb-20 bg-slate-50 min-h-screen">
+      {/* Dynamic Animated Hero Section */}
+      <section className="relative h-[400px] md:h-[600px] overflow-hidden mb-16">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={HEADER_IMAGE} 
+            alt="Events Header" 
+            className="w-full h-full object-cover animate-[subtleZoom_20s_infinite_alternate]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 via-slate-900/40 to-slate-50"></div>
+        </div>
+        
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 flex flex-col justify-center items-start pt-20">
+          <div className="animate-in fade-in slide-in-from-bottom duration-1000 fill-mode-forwards">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-bold mb-6 backdrop-blur-md uppercase tracking-widest">
+              <Sparkles className="w-4 h-4" /> Итгэлийн нэгдэл
+            </div>
+            <h1 className="text-4xl md:text-7xl font-black text-white mb-6 leading-tight drop-shadow-2xl">
+              Үйл ажиллагаа ба <br /> <span className="text-teal-400">Үйлчлэл</span>
+            </h1>
+            <p className="text-slate-200 text-lg md:text-2xl max-w-2xl font-medium drop-shadow-md leading-relaxed">
+              Сүмийн тогтмол цуглаанууд болон таны хүчээ өгөх боломжтой үйлчлэлийн багуудад нэгдээрэй.
+            </p>
+          </div>
+        </div>
 
+        <style>{`
+          @keyframes subtleZoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+          }
+        `}</style>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4">
         {successMessage && (
           <div className="mb-8 p-6 bg-teal-700 text-white rounded-[24px] shadow-xl flex items-center justify-between animate-in slide-in-from-top duration-500">
             <div className="flex items-center gap-4">

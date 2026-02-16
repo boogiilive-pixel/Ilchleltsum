@@ -19,7 +19,10 @@ import {
   Coins,
   Newspaper,
   CheckCircle2,
-  ArrowUp
+  ArrowUp,
+  Send,
+  Bell,
+  AlertCircle
 } from 'lucide-react';
 import LandingPage from './pages/LandingPage.tsx';
 import SermonPage from './pages/SermonPage.tsx';
@@ -29,6 +32,14 @@ import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
 import MinistryPage from './pages/MinistryPage.tsx';
 
+// --- CONFIGURATION ---
+export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui6OvCxuYLTlBeh7vj5CHCEn43T5Zp4dSAEPtpbS2iEg0lLtzURzjRIR/exec"; 
+
+// Validation Helper
+export const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -37,28 +48,14 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Scroll To Top Button Component
 const ScrollToTopButton = () => {
   const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
-    const toggleVisibility = () => {
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
-    };
+    const toggleVisibility = () => setIsVisible(window.pageYOffset > 300);
     window.addEventListener('scroll', toggleVisibility);
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <button
@@ -66,7 +63,6 @@ const ScrollToTopButton = () => {
       className={`fixed bottom-8 right-8 z-[100] p-4 bg-teal-700 text-white rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 hover:bg-teal-800 focus:outline-none ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
       }`}
-      aria-label="Scroll to top"
     >
       <ArrowUp className="w-6 h-6" />
     </button>
@@ -79,10 +75,7 @@ export const AdventistLogo = ({ className = "w-12 h-12" }) => (
       src="https://lh3.googleusercontent.com/d/1iVLnofMfCzcUFC5D-jmNz7zUNonArK9K" 
       alt="Илчлэлт Сүм" 
       className="w-full h-full object-contain drop-shadow-md"
-      onError={(e) => {
-        const target = e.target as HTMLImageElement;
-        target.src = "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=100&q=80";
-      }}
+      onError={(e) => (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1544427920-c49ccfb85579?auto=format&fit=crop&w=100&q=80"}
     />
   </div>
 );
@@ -100,44 +93,58 @@ const AuthModal: React.FC<{
   const [isLogin, setIsLogin] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    // Validation logic
+    if (formData.name.trim().length < 2 || !isValidEmail(formData.email) || formData.password.length < 4) {
+      setError("Уучлаарай та үнэн зөв мэдээлэл оруулан уу!");
+      return;
+    }
+
     setLoading(true);
 
-    // Fail-safe success trigger
-    const failSafeTimer = setTimeout(() => {
-      if (!isLogin) {
-        setShowSuccess(true);
-        setTimeout(() => {
-          setShowSuccess(false);
-          onLoginSuccess({ name: formData.name || 'Шинэ Хэрэглэгч', email: formData.email });
-          onClose();
-        }, 2000);
-      } else {
-        onLoginSuccess({ name: formData.name || 'Зочин', email: formData.email });
-        onClose();
-      }
-      setLoading(false);
-    }, 2000);
-
     try {
-      await fetch("https://formspree.io/f/xdalgqob", {
+      const params = new URLSearchParams();
+      params.append('name', formData.name);
+      params.append('email', formData.email);
+      params.append('action', isLogin ? "Нэвтрэх оролдлого" : "Шинэ бүртгүүлэх хүсэлт");
+
+      await fetch(SUBMIT_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Accept": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          action: isLogin ? "Нэвтрэх оролдлого" : "Шинэ бүртгүүлэх хүсэлт",
-          _subject: `Илчлэлт Сүм: ${isLogin ? 'Хэрэглэгч нэвтэрлээ' : 'Шинэ хэрэглэгч бүртгүүллээ'}`,
-        })
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString()
       });
-      // Logic handled by timer for smoother UX even if blocked
+      
+      setTimeout(() => {
+        if (!isLogin) {
+          setShowSuccess(true);
+          setTimeout(() => {
+            setShowSuccess(false);
+            onLoginSuccess({ name: formData.name || 'Шинэ Хэрэглэгч', email: formData.email });
+            onClose();
+          }, 2000);
+        } else {
+          onLoginSuccess({ name: formData.name || 'Зочин', email: formData.email });
+          onClose();
+        }
+      }, 1500);
+      
     } catch (err) {
-      console.error("Auth error:", err);
+      console.error("Submission failed:", err);
+      onLoginSuccess({ name: formData.name || 'Зочин', email: formData.email });
+      onClose();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,42 +152,39 @@ const AuthModal: React.FC<{
     <div className="fixed inset-0 z-[500] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}></div>
       <div className="relative bg-white w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-        <button onClick={onClose} disabled={loading} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-          <X className="w-5 h-5" />
-        </button>
-        
+        <button onClick={onClose} disabled={loading} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><X className="w-5 h-5" /></button>
         <div className="p-8 md:p-10">
           {showSuccess ? (
             <div className="text-center py-10 animate-in zoom-in">
-              <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <CheckCircle2 className="w-10 h-10" />
-              </div>
+              <div className="w-20 h-20 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mb-6 mx-auto"><CheckCircle2 className="w-10 h-10" /></div>
               <h2 className="text-xl font-bold mb-4 text-slate-900 leading-tight">Таны мэдээллийг хүлээн авсны дараа бид тантай холбогдох болно.</h2>
-              <p className="text-slate-500 text-sm">Бүртгүүлсэнд баярлалаа.</p>
             </div>
           ) : (
             <>
               <div className="text-center mb-8">
-                <div className="flex justify-center mb-4">
-                  <AdventistLogo className="w-20 h-20" />
-                </div>
+                <div className="flex justify-center mb-4"><AdventistLogo className="w-20 h-20" /></div>
                 <h2 className="text-2xl font-bold text-slate-900">{isLogin ? 'Тавтай морил' : 'Шинэ бүртгэл'}</h2>
-                <p className="text-slate-500 mt-2 text-sm leading-relaxed">
-                  {isLogin ? 'Нэр болон имэйлээ оруулж нэвтэрнэ үү.' : 'Бидний гэр бүлд нэгдэх хүсэлтээ илгээгээрэй.'}
-                </p>
               </div>
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-semibold animate-in slide-in-from-top-2 duration-300">
+                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  {error}
+                </div>
+              )}
+
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="relative">
                   <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input name="name" type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Таны нэр" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
+                  <input name="name" type="text" required disabled={loading} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Таны нэр" className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${error && formData.name.length < 2 ? 'border-red-300 ring-1 ring-red-100' : 'border-slate-100'} rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium`} />
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input name="email" type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
+                  <input name="email" type="email" required disabled={loading} value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder="Имэйл хаяг" className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${error && !isValidEmail(formData.email) ? 'border-red-300 ring-1 ring-red-100' : 'border-slate-100'} rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium`} />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                  <input name="password" type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium transition-all" />
+                  <input name="password" type="password" required disabled={loading} value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} placeholder="Нууц үг" className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${error && formData.password.length < 4 ? 'border-red-300 ring-1 ring-red-100' : 'border-slate-100'} rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium`} />
                 </div>
                 <button type="submit" disabled={loading} className="w-full py-4 bg-teal-700 text-white font-bold rounded-2xl hover:bg-teal-800 transition-all shadow-lg flex items-center justify-center gap-2 mt-4 active:scale-95">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isLogin ? 'Нэвтрэх' : 'Хүсэлт илгээх')}
@@ -188,7 +192,7 @@ const AuthModal: React.FC<{
               </form>
               <p className="text-center mt-8 text-sm text-slate-600 font-medium">
                 {isLogin ? 'Шинэ хэрэглэгч үү?' : 'Бүртгэлтэй юу?'} 
-                <button onClick={() => setIsLogin(!isLogin)} className="ml-2 text-teal-700 font-bold hover:underline transition-all">{isLogin ? 'Бүртгүүлэх' : 'Нэвтрэх'}</button>
+                <button onClick={() => { setIsLogin(!isLogin); setError(null); }} className="ml-2 text-teal-700 font-bold hover:underline">{isLogin ? 'Бүртгүүрэх' : 'Нэвтрэх'}</button>
               </p>
             </>
           )}
@@ -242,7 +246,7 @@ const Navbar: React.FC<{
               <button onClick={onLogout} className="p-2 text-slate-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
             </div>
           ) : (
-            <button onClick={onAuthClick} className="bg-teal-700 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-teal-800 shadow-lg shadow-teal-700/20">Нэгдэх</button>
+            <button onClick={onAuthClick} className="bg-teal-700 text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-teal-800 shadow-lg">Нэгдэх</button>
           )}
         </div>
         <button className="md:hidden p-2 text-slate-700" onClick={() => setIsOpen(!isOpen)}>{isOpen ? <X /> : <Menu />}</button>
@@ -260,60 +264,116 @@ const Navbar: React.FC<{
 };
 
 const Footer: React.FC = () => {
-  const footerLinks = [
-    { path: '/sermons', name: 'Сургаалууд' },
-    { path: '/info', name: 'Мэдээлэл' },
-    { path: '/events', name: 'Үйл ажиллагаа' },
-    { path: '/donation', name: 'Хандив' },
-    { path: '/contact', name: 'Холбоо барих' },
-  ];
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(false);
+
+    if (!email || !isValidEmail(email)) {
+      setError(true);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const params = new URLSearchParams();
+      params.append('email', email);
+      params.append('action', 'Мэдээлэл авах хүсэлт (Newsletter)');
+
+      await fetch(SUBMIT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString()
+      });
+
+      setTimeout(() => {
+        setSuccess(true);
+        setEmail('');
+        setTimeout(() => setSuccess(false), 3000);
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <footer className="bg-slate-900 text-slate-300 py-16">
-      <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12">
+    <footer className="bg-slate-900 text-slate-300">
+      {/* Newsletter Section */}
+      <div className="border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="max-w-md text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3 text-teal-400 mb-3">
+              <Bell className="w-6 h-6 animate-pulse" />
+              <h3 className="text-xl md:text-2xl font-black text-white">Мэдээлэл авах</h3>
+            </div>
+            <p className="text-slate-400 font-medium">Сүмийн шинэ сонин, арга хэмжээний мэдээллийг имэйлээрээ цаг алдалгүй аваарай.</p>
+          </div>
+          <form onSubmit={handleSubscribe} className="w-full max-w-md">
+            <div className="relative flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-grow">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <input 
+                  type="email" 
+                  required 
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if(error) setError(false); }}
+                  placeholder="Таны имэйл хаяг" 
+                  className={`w-full pl-12 pr-4 py-4 bg-slate-800 border ${error ? 'border-red-500/50' : 'border-slate-700'} rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none text-white font-medium transition-colors`} 
+                />
+              </div>
+              <button 
+                disabled={loading || success}
+                className={`px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-2 shadow-lg min-w-[140px] ${
+                  success ? 'bg-emerald-500 text-white' : 'bg-teal-600 text-white hover:bg-teal-500'
+                }`}
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : success ? <CheckCircle2 className="w-5 h-5" /> : <><Send className="w-5 h-5" /> Бүртгүүлэх</>}
+              </button>
+            </div>
+            {error && <p className="text-red-400 text-xs font-bold mt-3 text-center md:text-left animate-in fade-in">Уучлаарай та үнэн зөв мэдээлэл оруулан уу!</p>}
+            {success && <p className="text-emerald-400 text-xs font-bold mt-3 text-center md:text-left animate-in fade-in">Амжилттай бүртгэгдлээ. Танд баярлалаа!</p>}
+          </form>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-4 mb-6">
             <AdventistLogo className="w-16 h-16" />
-            <div className="flex flex-col text-white">
-              <span className="text-xl font-bold">Илчлэлт Сүм</span>
-              <span className="text-xs uppercase tracking-widest text-teal-400 font-bold">Revelation Church</span>
-            </div>
+            <div className="flex flex-col text-white"><span className="text-xl font-bold">Илчлэлт Сүм</span><span className="text-xs uppercase tracking-widest text-teal-400 font-bold">Revelation Church</span></div>
           </div>
           <p className="mb-8 max-w-sm leading-relaxed text-slate-400">Бид Есүс Христийн сайн мэдээг түгээж, нийгэмдээ гэрэл болох зорилготой Долоо дахь өдрийн Адвентист сүм юм.</p>
           <div className="flex gap-4">
-            <a href="https://www.facebook.com/ilchleltsum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all"><Facebook className="w-5 h-5" /></a>
-            <a href="https://www.youtube.com/@ilchlelt" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all"><Youtube className="w-5 h-5" /></a>
+            <a href="https://www.facebook.com/ilchleltsum" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all text-white"><Facebook className="w-5 h-5" /></a>
+            <a href="https://www.youtube.com/@ilchlelt" target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-slate-800 flex items-center justify-center hover:bg-teal-600 transition-all text-white"><Youtube className="w-5 h-5" /></a>
           </div>
         </div>
         <div>
           <h4 className="text-white font-bold mb-6 text-lg">Холбоосууд</h4>
           <ul className="space-y-3">
-            {footerLinks.map(link => (
-              <li key={link.path}>
-                <Link to={link.path} className="hover:text-teal-400 transition-colors">{link.name}</Link>
-              </li>
+            {['/sermons', '/info', '/events', '/donation', '/contact'].map(path => (
+              <li key={path}><Link to={path} className="hover:text-teal-400 transition-colors uppercase text-xs font-bold tracking-widest">{path.replace('/', '') || 'нүүр'}</Link></li>
             ))}
           </ul>
         </div>
         <div>
           <h4 className="text-white font-bold mb-6 text-lg">Цуглааны цаг</h4>
           <ul className="space-y-4 text-sm">
-            <li className="flex flex-col">
-              <span className="text-teal-400 font-bold">Лхагва гараг:</span>
-              <span>18:30 - Библи судлал Онлайн</span>
-            </li>
-            <li className="flex flex-col">
-              <span className="text-teal-400 font-bold">Баасан гараг:</span>
-              <span>18:30 - Залбирлын цуглаан</span>
-            </li>
-            <li className="flex flex-col">
-              <span className="text-teal-400 font-bold">Бямба гараг:</span>
-              <span>10:00 - Хүндэтгэлийн цуглаан</span>
-            </li>
+            <li><span className="text-teal-400 font-bold block">Лхагва гараг:</span>18:30 - Библи судлал Онлайн</li>
+            <li><span className="text-teal-400 font-bold block">Баасан гараг:</span>18:30 - Залбирлын цуглаан</li>
+            <li><span className="text-teal-400 font-bold block">Бямба гараг:</span>10:00 - Хүндэтгэлийн цуглаан</li>
           </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-slate-800 text-center text-sm opacity-40">© {new Date().getFullYear()} Илчлэлт Сүм. Бүх эрх хуулиар хамгаалагдсан.</div>
+      <div className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-800 text-center text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">© {new Date().getFullYear()} Илчлэлт Сүм. Бүх эрх хуулиар хамгаалагдсан.</div>
     </footer>
   );
 };
@@ -343,13 +403,11 @@ const AppContent: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
-  return (
-    <HashRouter>
-      <ScrollToTop />
-      <AppContent />
-    </HashRouter>
-  );
-};
+const App: React.FC = () => (
+  <HashRouter>
+    <ScrollToTop />
+    <AppContent />
+  </HashRouter>
+);
 
 export default App;

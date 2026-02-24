@@ -267,7 +267,7 @@ const Navbar: React.FC<{
 };
 
 const Footer: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -276,7 +276,7 @@ const Footer: React.FC = () => {
     e.preventDefault();
     setError(false);
 
-    if (!email || !isValidEmail(email)) {
+    if (!phone || phone.trim().length < 8) {
       setError(true);
       return;
     }
@@ -285,8 +285,8 @@ const Footer: React.FC = () => {
 
     try {
       const params = new URLSearchParams();
-      params.append('email', email);
-      params.append('action', 'Мэдээлэл авах хүсэлт (Newsletter)');
+      params.append('phone', phone);
+      params.append('action', 'Мэдээлэл авах хүсэлт (Newsletter - Phone)');
 
       await fetch(SUBMIT_URL, {
         method: "POST",
@@ -297,7 +297,7 @@ const Footer: React.FC = () => {
 
       setTimeout(() => {
         setSuccess(true);
-        setEmail('');
+        setPhone('');
         setTimeout(() => setSuccess(false), 3000);
       }, 1000);
     } catch (err) {
@@ -315,20 +315,20 @@ const Footer: React.FC = () => {
           <div className="max-w-md text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 text-teal-400 mb-3">
               <Bell className="w-6 h-6 animate-pulse" />
-              <h3 className="text-xl md:text-2xl font-black text-white">Мэдээлэл авах</h3>
+              <h3 className="text-xl md:text-2xl font-black text-white leading-tight">Мэдээлэл авах</h3>
             </div>
-            <p className="text-slate-400 font-medium">Сүмийн шинэ сонин, арга хэмжээний мэдээллийг имэйлээрээ цаг алдалгүй аваарай.</p>
+            <p className="text-slate-400 font-medium">Хэрэв та мэдээлэл авахыг хүсвэл утасны дугаараа бичээд үлдээгээрэй. Бид тантай холбогдох болно.</p>
           </div>
           <form onSubmit={handleSubscribe} className="w-full max-w-md">
             <div className="relative flex flex-col sm:flex-row gap-3">
               <div className="relative flex-grow">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input 
-                  type="email" 
+                   type="tel" 
                   required 
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); if(error) setError(false); }}
-                  placeholder="Таны имэйл хаяг" 
+                  value={phone}
+                  onChange={(e) => { setPhone(e.target.value); if(error) setError(false); }}
+                  placeholder="Таны утасны дугаар" 
                   className={`w-full pl-12 pr-4 py-4 bg-slate-800 border ${error ? 'border-red-500/50' : 'border-slate-700'} rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none text-white font-medium transition-colors`} 
                 />
               </div>

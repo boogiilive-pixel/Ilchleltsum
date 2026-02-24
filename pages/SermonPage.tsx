@@ -77,6 +77,14 @@ const FALLBACK_VIDEOS: YouTubeVideo[] = [
     pubDate: '2024-02-05',
     thumbnail: 'https://img.youtube.com/vi/-oYxPfGYdaw/maxresdefault.jpg',
     author: 'Илчлэлт Сүм'
+  },
+  {
+    id: 'd80xFbQ1ry8',
+    title: 'Бурханы Үг - Амьдралын Гэрэл | Илчлэлт Сүм',
+    link: 'https://youtu.be/d80xFbQ1ry8',
+    pubDate: '2024-03-20',
+    thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
   }
 ];
 

@@ -29,6 +29,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchPrayers = async () => {
@@ -51,6 +52,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
+    setErrorMessage('');
     
     try {
       const response = await fetch('/api/prayers', {
@@ -62,7 +64,10 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         })
       });
       
-      if (!response.ok) throw new Error('Failed to submit');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Илгээхэд алдаа гарлаа.');
+      }
       
       const data = await response.json();
       setPrayers([data, ...prayers]);
@@ -72,9 +77,10 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         setShowForm(false);
         setSubmitStatus('idle');
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit prayer:', error);
       setSubmitStatus('error');
+      setErrorMessage(error.message || 'Алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
       setIsSubmitting(false);
     }
@@ -145,7 +151,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
                     {submitStatus === 'error' && (
                       <div className="flex items-center gap-2 text-red-600 font-bold animate-in fade-in slide-in-from-left-2">
                         <AlertCircle className="w-5 h-5" />
-                        Алдаа гарлаа. Дахин оролдоно уу.
+                        {errorMessage}
                       </div>
                     )}
                   </div>

@@ -41,37 +41,65 @@ async function startServer() {
     }
   };
   
-  const savePrayers = (prayers: any) => fs.writeFileSync(PRAYERS_FILE, JSON.stringify(prayers, null, 2));
+  const savePrayers = (prayers: any) => {
+    try {
+      fs.writeFileSync(PRAYERS_FILE, JSON.stringify(prayers, null, 2));
+    } catch (e) {
+      console.error("Failed to save prayers to file:", e);
+      throw e;
+    }
+  };
 
   // API routes
   app.get("/api/prayers", (req, res) => {
-    res.json(getPrayers());
+    try {
+      const prayers = getPrayers();
+      res.json(prayers);
+    } catch (error) {
+      console.error("GET /api/prayers error:", error);
+      res.status(500).json({ error: "Failed to fetch prayers" });
+    }
   });
 
   app.post("/api/prayers", (req, res) => {
-    console.log("POST /api/prayers", req.body);
+    console.log("POST /api/prayers body:", req.body);
+    
+    if (!req.body || typeof req.body !== 'object') {
+      console.error("Invalid request body type:", typeof req.body);
+      return res.status(400).json({ error: "Invalid request body" });
+    }
+
     const { author, text } = req.body;
-    if (!text) {
-      console.log("Error: Text is required");
-      return res.status(400).json({ error: "Text is required" });
+    
+    if (!text || typeof text !== 'string' || !text.trim()) {
+      console.error("Text is missing or invalid:", { text });
+      return res.status(400).json({ error: "Залбирлын текст заавал байх ёстой." });
     }
     
     try {
       const prayers = getPrayers();
+      if (!Array.isArray(prayers)) {
+        console.error("Prayers data is not an array, resetting...");
+        savePrayers([]);
+        return res.status(500).json({ error: "Data corruption detected, please try again." });
+      }
+
       const newPrayer = {
         id: Math.random().toString(36).substr(2, 9),
-        author: author || 'Зочин',
-        text,
+        author: (author && typeof author === 'string' ? author.trim() : 'Зочин'),
+        text: text.trim(),
         date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
         prayCount: 0
       };
+      
       prayers.unshift(newPrayer);
       savePrayers(prayers);
+      
       console.log("Successfully added prayer:", newPrayer.id);
-      res.json(newPrayer);
+      res.status(201).json(newPrayer);
     } catch (error) {
       console.error("Failed to add prayer:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Сервер дээр алдаа гарлаа. Дараа дахин оролдоно уу." });
     }
   });
 

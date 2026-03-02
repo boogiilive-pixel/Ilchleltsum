@@ -26,11 +26,17 @@ async function startServer() {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  
+  // 2. CORS (Must be before routes)
   app.use(cors({
-    origin: '*', // Allow all for now to debug CORS vs 404
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    credentials: true
   }));
+
+  // Handle preflight for all routes
+  app.options('*', cors());
 
   // Body parsing error handler
   app.use((err: any, req: any, res: any, next: any) => {
@@ -114,7 +120,7 @@ async function startServer() {
     });
   });
 
-  app.get("/api/prayers", (req, res) => {
+  app.get(["/api/prayers", "/api/prayers/"], (req, res) => {
     console.log("Handling GET /api/prayers");
     try {
       const prayers = getPrayers();
@@ -125,7 +131,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/prayers", (req, res) => {
+  app.post(["/api/prayers", "/api/prayers/"], (req, res) => {
     console.log(">>> POST /api/prayers RECEIVED <<<");
     const { author, text } = req.body;
     
@@ -151,7 +157,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/prayers/:id/pray", (req, res) => {
+  app.post(["/api/prayers/:id/pray", "/api/prayers/:id/pray/"], (req, res) => {
     const { id } = req.params;
     const prayers = getPrayers();
     const prayer = prayers.find((p: any) => p.id === id);

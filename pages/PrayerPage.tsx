@@ -37,10 +37,16 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     const FALLBACK_APP_URL = 'https://ais-dev-nwirquaywi2fngd7olqw3r-31438464689.asia-northeast1.run.app';
     const appUrl = (process.env.APP_URL || FALLBACK_APP_URL).replace(/\/$/, '');
     
+    // Ensure path starts with /
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    
+    // If we are on a different origin, use absolute URL
     if (appUrl && window.location.origin !== appUrl && !path.startsWith('http')) {
-      return `${appUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+      const fullUrl = `${appUrl}${normalizedPath}`;
+      return fullUrl;
     }
-    return path;
+    
+    return normalizedPath;
   };
 
   useEffect(() => {
@@ -50,9 +56,9 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         console.log("Checking health at:", url);
         const res = await fetch(url);
         const data = await res.json();
-        console.log("API Health Check (v4):", data);
+        console.log("API Health Check (v5):", data);
       } catch (e) {
-        console.error("API Health Check FAILED (v4):", e);
+        console.error("API Health Check FAILED (v5):", e);
       }
     };
     checkHealth();
@@ -66,7 +72,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         
         if (!response.ok) {
           const text = await response.text();
-          console.error('API Error Response (v4):', text);
+          console.error('API Error Response (v5):', text);
           throw new Error(`Server error: ${response.status}. ${text.substring(0, 50)}`);
         }
 
@@ -75,11 +81,11 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
           setPrayers(data);
         } else {
           const text = await response.text();
-          console.error('Non-JSON response received (v4):', text);
+          console.error('Non-JSON response received (v5):', text);
           throw new Error('Серверээс буруу хариу ирлээ (JSON биш).');
         }
       } catch (error: any) {
-        console.error('Failed to fetch prayers (v4):', error);
+        console.error('Failed to fetch prayers (v5):', error);
         setErrorMessage(error.message || 'Залбирлуудыг ачаалахад алдаа гарлаа.');
       } finally {
         setLoading(false);
@@ -92,19 +98,19 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     e.preventDefault();
     if (!newPrayer.trim()) return;
 
-    console.log("handleSubmit triggered (v4) with:", newPrayer);
+    console.log("handleSubmit triggered (v5) with:", newPrayer);
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
     
     try {
       const url = getApiUrl('/api/prayers');
-      console.log("Submitting prayer to (v4):", url);
+      console.log("Submitting prayer to (v5):", url);
       const payload = {
         author: user ? user.name : 'Зочин',
         text: newPrayer.trim()
       };
-      console.log("Payload (v4):", JSON.stringify(payload));
+      console.log("Payload (v5):", JSON.stringify(payload));
 
       const response = await fetch(url, {
         method: 'POST',
@@ -116,26 +122,26 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       });
       
       const contentType = response.headers.get("content-type");
-      console.log("Response status (v4):", response.status);
-      console.log("Response content-type (v4):", contentType);
+      console.log("Response status (v5):", response.status);
+      console.log("Response content-type (v5):", contentType);
 
       if (!response.ok) {
         let errorMsg = `Server error: ${response.status}`;
         if (contentType && contentType.includes("application/json")) {
           try {
             const errorData = await response.json();
-            console.log("Error data received (v4):", errorData);
+            console.log("Error data received (v5):", errorData);
             if (errorData.error) {
               errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
             } else if (errorData.message) {
               errorMsg = typeof errorData.message === 'string' ? errorData.message : JSON.stringify(errorData.message);
             }
           } catch (e) {
-            console.error("Failed to parse error JSON (v4)");
+            console.error("Failed to parse error JSON (v5)");
           }
         } else {
           const errorText = await response.text();
-          console.error('Non-JSON error response (v4):', errorText);
+          console.error('Non-JSON error response (v5):', errorText);
           errorMsg = `Серверээс алдаа ирлээ (${response.status}). Хариу: ${errorText.substring(0, 100)}`;
         }
         throw new Error(errorMsg);

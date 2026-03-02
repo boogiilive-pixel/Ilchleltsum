@@ -6,31 +6,43 @@ import path from "path";
 import cors from "cors";
 
 async function startServer() {
+  console.log("Starting server...");
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+  
   const app = express();
   const PORT = 3000;
   const PRAYERS_FILE = path.join(process.cwd(), "prayers.json");
+  
+  console.log("PRAYERS_FILE path:", PRAYERS_FILE);
 
   app.use(express.json());
   app.use(cors());
 
   // Initialize prayers file if it doesn't exist
   if (!fs.existsSync(PRAYERS_FILE)) {
-    fs.writeFileSync(PRAYERS_FILE, JSON.stringify([
-      {
-        id: '1',
-        author: 'Зочин',
-        text: 'Манай гэр бүлийн төлөө залбирч өгөөрэй. Бид бүгдээрээ эрүүл энх, аз жаргалтай байхыг хүсэж байна.',
-        date: '2024.03.01',
-        prayCount: 12
-      },
-      {
-        id: '2',
-        author: 'Дорж',
-        text: 'Шинэ ажилд орох гэж байгаа тул амжилт хүсэж залбирч өгнө үү.',
-        date: '2024.03.02',
-        prayCount: 5
-      }
-    ]));
+    console.log("Initializing prayers.json...");
+    try {
+      fs.writeFileSync(PRAYERS_FILE, JSON.stringify([
+        {
+          id: '1',
+          author: 'Зочин',
+          text: 'Манай гэр бүлийн төлөө залбирч өгөөрэй. Бид бүгдээрээ эрүүл энх, аз жаргалтай байхыг хүсэж байна.',
+          date: '2024.03.01',
+          prayCount: 12
+        },
+        {
+          id: '2',
+          author: 'Дорж',
+          text: 'Шинэ ажилд орох гэж байгаа тул амжилт хүсэж залбирч өгнө үү.',
+          date: '2024.03.02',
+          prayCount: 5
+        }
+      ], null, 2));
+    } catch (err) {
+      console.error("Failed to initialize prayers.json:", err);
+    }
+  } else {
+    console.log("prayers.json already exists.");
   }
 
   const getPrayers = () => {
@@ -51,7 +63,22 @@ async function startServer() {
   };
 
   // API routes
+  app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}`);
+    next();
+  });
+
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      time: new Date().toISOString(),
+      env: process.env.NODE_ENV || 'development'
+    });
+  });
+
   app.get("/api/prayers", (req, res) => {
+    console.log("Handling GET /api/prayers");
     try {
       const prayers = getPrayers();
       res.json(prayers);
@@ -105,6 +132,7 @@ async function startServer() {
 
   app.post("/api/prayers/:id/pray", (req, res) => {
     const { id } = req.params;
+    console.log(`POST /api/prayers/${id}/pray`);
     const prayers = getPrayers();
     const prayer = prayers.find((p: any) => p.id === id);
     if (prayer) {
@@ -116,23 +144,48 @@ async function startServer() {
     }
   });
 
+  // Catch-all for API routes to ensure JSON response
+  app.all("/api/*", (req, res) => {
+    console.warn(`404 API Route: ${req.method} ${req.url}`);
+    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+    console.log("Starting Vite in middleware mode...");
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite middleware attached.");
+    } catch (viteError) {
+      console.error("Failed to start Vite server:", viteError);
+    }
   } else {
-    app.use(express.static("dist"));
-    app.get("*", (req, res) => {
-      res.sendFile(path.resolve("dist/index.html"));
-    });
+    console.log("Starting in production mode...");
+    const distPath = path.resolve("dist");
+    if (fs.existsSync(distPath)) {
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    } else {
+      console.error("Production mode enabled but 'dist' folder not found!");
+      app.get("*", (req, res) => {
+        res.status(500).send("Application is not built. Please run 'npm run build'.");
+      });
+    }
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`>>> Server is listening on port ${PORT} <<<`);
+    console.log(`>>> Health check: http://localhost:${PORT}/api/health <<<`);
   });
 }
 
-startServer();
+console.log("Initializing startServer...");
+startServer().catch(err => {
+  console.error("CRITICAL: Failed to start server:", err);
+});

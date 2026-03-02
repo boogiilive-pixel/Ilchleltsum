@@ -35,10 +35,25 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     const fetchPrayers = async () => {
       try {
         const response = await fetch('/api/prayers');
-        const data = await response.json();
-        setPrayers(data);
-      } catch (error) {
+        const contentType = response.headers.get("content-type");
+        
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('API Error Response:', text);
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          setPrayers(data);
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response received:', text);
+          throw new Error('Серверээс буруу хариу ирлээ (JSON биш).');
+        }
+      } catch (error: any) {
         console.error('Failed to fetch prayers:', error);
+        setErrorMessage(error.message || 'Залбирлуудыг ачаалахад алдаа гарлаа.');
       } finally {
         setLoading(false);
       }
@@ -55,28 +70,49 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     setErrorMessage('');
     
     try {
+      console.log("Submitting prayer...");
       const response = await fetch('/api/prayers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           author: user ? user.name : 'Зочин',
           text: newPrayer
         })
       });
       
+      const contentType = response.headers.get("content-type");
+      console.log("Response status:", response.status);
+      console.log("Response content-type:", contentType);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Илгээхэд алдаа гарлаа.');
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        } else {
+          const errorText = await response.text();
+          console.error('Non-JSON error response:', errorText);
+          throw new Error(`Серверээс алдаа ирлээ (${response.status}). Хариу: ${errorText.substring(0, 50)}...`);
+        }
       }
       
-      const data = await response.json();
-      setPrayers([data, ...prayers]);
-      setNewPrayer('');
-      setSubmitStatus('success');
-      setTimeout(() => {
-        setShowForm(false);
-        setSubmitStatus('idle');
-      }, 2000);
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        console.log("Submission successful:", data);
+        setPrayers([data, ...prayers]);
+        setNewPrayer('');
+        setSubmitStatus('success');
+        setTimeout(() => {
+          setShowForm(false);
+          setSubmitStatus('idle');
+        }, 2000);
+      } else {
+        const text = await response.text();
+        console.error("Expected JSON but got:", text);
+        throw new Error('Серверээс JSON биш хариу ирлээ.');
+      }
     } catch (error: any) {
       console.error('Failed to submit prayer:', error);
       setSubmitStatus('error');

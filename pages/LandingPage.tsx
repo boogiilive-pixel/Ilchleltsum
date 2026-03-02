@@ -219,7 +219,7 @@ const LandingPage: React.FC = () => {
               <h3 className="text-3xl md:text-4xl font-black mb-4">Танд залбирал хэрэгтэй юу?</h3>
               <p className="text-teal-100 text-lg max-w-xl font-medium">Бид таны төлөө залбирахад бэлэн байна. Залбирлын хананд хүсэлтээ үлдээж, хамтдаа Бурханы ивээлийг хүсэцгөөе.</p>
             </div>
-            <Link to="/prayer-requests" className="relative z-10 px-10 py-5 bg-white text-teal-900 rounded-full font-black text-xl hover:bg-teal-50 transition-all shadow-xl flex items-center gap-3 active:scale-95">
+            <Link to="/prayer" className="relative z-10 px-10 py-5 bg-white text-teal-900 rounded-full font-black text-xl hover:bg-teal-50 transition-all shadow-xl flex items-center gap-3 active:scale-95">
               <Heart className="w-6 h-6 fill-teal-900" /> Залбирлын хана
             </Link>
           </div>

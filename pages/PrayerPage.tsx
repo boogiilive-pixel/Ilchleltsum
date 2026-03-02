@@ -116,7 +116,22 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     } catch (error: any) {
       console.error('Failed to submit prayer:', error);
       setSubmitStatus('error');
-      setErrorMessage(error.message || 'Алдаа гарлаа. Дахин оролдоно уу.');
+      
+      let msg = 'Алдаа гарлаа. Дахин оролдоно уу.';
+      
+      if (typeof error === 'string') {
+        msg = error;
+      } else if (error && typeof error.message === 'string') {
+        // If message is "[object Object]", we should use a fallback
+        msg = error.message === '[object Object]' ? 'Серверээс тодорхойгүй алдаа ирлээ.' : error.message;
+      } else if (error && typeof error.error === 'string') {
+        msg = error.error;
+      } else if (error && typeof error.toString === 'function') {
+        const str = error.toString();
+        msg = str === '[object Object]' ? 'Серверээс тодорхойгүй алдаа ирлээ.' : str;
+      }
+      
+      setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
     }

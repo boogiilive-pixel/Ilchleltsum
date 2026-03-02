@@ -89,31 +89,34 @@ async function startServer() {
   });
 
   app.post("/api/prayers", (req, res) => {
-    console.log("POST /api/prayers body:", req.body);
+    console.log(">>> POST /api/prayers <<<");
+    console.log("Headers:", req.headers);
+    console.log("Body:", JSON.stringify(req.body));
     
     if (!req.body || typeof req.body !== 'object') {
-      console.error("Invalid request body type:", typeof req.body);
-      return res.status(400).json({ error: "Invalid request body" });
+      const errorMsg = `Invalid request body type: ${typeof req.body}`;
+      console.error(errorMsg);
+      return res.status(400).json({ error: "Хүсэлтийн формат буруу байна." });
     }
 
     const { author, text } = req.body;
     
     if (!text || typeof text !== 'string' || !text.trim()) {
-      console.error("Text is missing or invalid:", { text });
+      console.error("Validation failed: text is missing or not a string", { text });
       return res.status(400).json({ error: "Залбирлын текст заавал байх ёстой." });
     }
     
     try {
       const prayers = getPrayers();
       if (!Array.isArray(prayers)) {
-        console.error("Prayers data is not an array, resetting...");
+        console.error("Prayers data is not an array, resetting to empty array.");
         savePrayers([]);
-        return res.status(500).json({ error: "Data corruption detected, please try again." });
+        return res.status(500).json({ error: "Өгөгдлийн сангийн алдаа гарлаа. Дахин оролдоно уу." });
       }
 
       const newPrayer = {
         id: Math.random().toString(36).substr(2, 9),
-        author: (author && typeof author === 'string' ? author.trim() : 'Зочин'),
+        author: (typeof author === 'string' && author.trim() ? author.trim() : 'Зочин'),
         text: text.trim(),
         date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
         prayCount: 0
@@ -124,9 +127,10 @@ async function startServer() {
       
       console.log("Successfully added prayer:", newPrayer.id);
       res.status(201).json(newPrayer);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add prayer:", error);
-      res.status(500).json({ error: "Сервер дээр алдаа гарлаа. Дараа дахин оролдоно уу." });
+      const msg = error?.message || "Unknown server error";
+      res.status(500).json({ error: `Сервер дээр алдаа гарлаа: ${msg}` });
     }
   });
 
@@ -178,6 +182,12 @@ async function startServer() {
       });
     }
   }
+
+  // Global error handler
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("GLOBAL ERROR:", err);
+    res.status(500).json({ error: "Сервер дээр тодорхойгүй алдаа гарлаа. " + (err.message || "") });
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`>>> Server is listening on port ${PORT} <<<`);

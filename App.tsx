@@ -24,16 +24,16 @@ import {
   Bell,
   AlertCircle
 } from 'lucide-react';
-import LandingPage from './pages/LandingPage.tsx';
-import SermonPage from './pages/SermonPage.tsx';
-import EventsPage from './pages/EventsPage.tsx';
-import ContactPage from './pages/ContactPage.tsx';
-import DonationPage from './pages/DonationPage.tsx';
-import InfoPage from './pages/InfoPage.tsx';
-import MinistryPage from './pages/MinistryPage.tsx';
-import PrayerPage from './pages/PrayerPage.tsx';
-import TestimonialSection from './components/TestimonialSection.tsx';
-import MouseFollower from './components/MouseFollower.tsx';
+import LandingPage from './pages/LandingPage';
+import SermonPage from './pages/SermonPage';
+import EventsPage from './pages/EventsPage';
+import ContactPage from './pages/ContactPage';
+import DonationPage from './pages/DonationPage';
+import InfoPage from './pages/InfoPage';
+import MinistryPage from './pages/MinistryPage';
+import PrayerPage from './pages/PrayerPage';
+import TestimonialSection from './components/TestimonialSection';
+import MouseFollower from './components/MouseFollower';
 
 // --- CONFIGURATION ---
 export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui6OvCxuYLTlBeh7vj5CHCEn43T5Zp4dSAEPtpbS2iEg0lLtzURzjRIR/exec"; 

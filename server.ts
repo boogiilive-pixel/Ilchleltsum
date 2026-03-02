@@ -10,6 +10,7 @@ console.log("SERVER.TS LOADED - " + new Date().toISOString());
 async function startServer() {
   console.log("Starting server...");
   console.log("NODE_ENV:", process.env.NODE_ENV);
+  console.log("APP_URL:", process.env.APP_URL);
   
   const app = express();
   const PORT = 3000;
@@ -19,13 +20,17 @@ async function startServer() {
 
   // 1. Request logger (Move to top)
   app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host}`);
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host} - Origin: ${req.headers.origin}`);
     next();
   });
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-  app.use(cors());
+  app.use(cors({
+    origin: '*', // Allow all for now to debug CORS vs 404
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  }));
 
   // Body parsing error handler
   app.use((err: any, req: any, res: any, next: any) => {
@@ -96,28 +101,6 @@ async function startServer() {
   };
 
   // API routes
-  app.use((req, res, next) => {
-    const timestamp = new Date().toISOString();
-    console.log(`[${timestamp}] ${req.method} ${req.url} - Content-Type: ${req.headers['content-type']}`);
-    next();
-  });
-
-  app.get("/api/test-fs", (req, res) => {
-    try {
-      const testFile = path.join(process.cwd(), "test-write.txt");
-      fs.writeFileSync(testFile, "test " + new Date().toISOString());
-      const content = fs.readFileSync(testFile, "utf-8");
-      fs.unlinkSync(testFile);
-      res.json({ status: "ok", writeRead: content });
-    } catch (e: any) {
-      res.status(500).json({ status: "error", message: e.message });
-    }
-  });
-
-  app.post("/api/echo", (req, res) => {
-    res.json({ body: req.body, type: typeof req.body });
-  });
-
   app.get("/api/ping", (req, res) => {
     res.json({ status: "pong", time: new Date().toISOString() });
   });
@@ -125,7 +108,7 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
-      v: 2,
+      v: 4,
       time: new Date().toISOString(),
       env: process.env.NODE_ENV || 'development'
     });
@@ -144,30 +127,14 @@ async function startServer() {
 
   app.post("/api/prayers", (req, res) => {
     console.log(">>> POST /api/prayers RECEIVED <<<");
-    console.log("Timestamp:", new Date().toISOString());
-    console.log("Headers:", JSON.stringify(req.headers));
-    console.log("Body:", JSON.stringify(req.body));
-    
-    if (!req.body || Object.keys(req.body).length === 0) {
-      console.error("Empty request body received!");
-      return res.status(400).json({ error: "Хүсэлтийн бие хоосон байна." });
-    }
-
     const { author, text } = req.body;
     
     if (!text || typeof text !== 'string' || !text.trim()) {
-      console.error("Validation failed: text is missing or not a string", { text });
       return res.status(400).json({ error: "Залбирлын текст заавал байх ёстой." });
     }
     
     try {
       const prayers = getPrayers();
-      if (!Array.isArray(prayers)) {
-        console.error("Prayers data is not an array, resetting to empty array.");
-        savePrayers([]);
-        return res.status(500).json({ error: "Өгөгдлийн сангийн алдаа гарлаа. Дахин оролдоно уу." });
-      }
-
       const newPrayer = {
         id: Math.random().toString(36).substr(2, 9),
         author: (typeof author === 'string' && author.trim() ? author.trim() : 'Зочин'),
@@ -178,19 +145,14 @@ async function startServer() {
       
       prayers.unshift(newPrayer);
       savePrayers(prayers);
-      
-      console.log("Successfully added prayer:", newPrayer.id);
       res.status(201).json(newPrayer);
     } catch (error: any) {
-      console.error("Failed to add prayer:", error);
-      const msg = error?.message || "Unknown server error";
-      res.status(500).json({ error: `Сервер дээр алдаа гарлаа: ${msg}` });
+      res.status(500).json({ error: `Сервер дээр алдаа гарлаа: ${error.message}` });
     }
   });
 
   app.post("/api/prayers/:id/pray", (req, res) => {
     const { id } = req.params;
-    console.log(`POST /api/prayers/${id}/pray`);
     const prayers = getPrayers();
     const prayer = prayers.find((p: any) => p.id === id);
     if (prayer) {
@@ -202,9 +164,8 @@ async function startServer() {
     }
   });
 
-  // Catch-all for API routes to ensure JSON response
+  // Catch-all for API routes
   app.all("/api/*", (req, res) => {
-    console.warn(`404 API Route: ${req.method} ${req.url}`);
     res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
   });
 

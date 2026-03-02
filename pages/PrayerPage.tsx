@@ -33,7 +33,10 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
 
   // Use absolute URL if we are on a different domain (e.g. ilchlelt.com vs run.app)
   const getApiUrl = (path: string) => {
-    const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+    // Hardcoded fallback for the current environment if process.env.APP_URL is missing
+    const FALLBACK_APP_URL = 'https://ais-dev-nwirquaywi2fngd7olqw3r-31438464689.asia-northeast1.run.app';
+    const appUrl = (process.env.APP_URL || FALLBACK_APP_URL).replace(/\/$/, '');
+    
     if (appUrl && window.location.origin !== appUrl && !path.startsWith('http')) {
       return `${appUrl}${path.startsWith('/') ? '' : '/'}${path}`;
     }
@@ -222,6 +225,9 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
           <p className="text-slate-500 text-lg mt-4 max-w-2xl mx-auto">
             Бие биенийхээ төлөө залбирч, Бурханы хайр ба ивээлийг хамтдаа хуваалцацгаая.
           </p>
+          <div className="mt-2 text-[10px] text-slate-400 font-mono">
+            API: {getApiUrl('/api')}
+          </div>
         </header>
 
         <div className="flex justify-center mb-12">

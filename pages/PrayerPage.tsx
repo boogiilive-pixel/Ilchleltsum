@@ -31,27 +31,40 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Use absolute URL if we are on a different domain (e.g. ilchlelt.com vs run.app)
+  const getApiUrl = (path: string) => {
+    const appUrl = (process.env.APP_URL || '').replace(/\/$/, '');
+    if (appUrl && window.location.origin !== appUrl && !path.startsWith('http')) {
+      return `${appUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    }
+    return path;
+  };
+
   useEffect(() => {
     const checkHealth = async () => {
       try {
-        const res = await fetch('/api/health');
+        const url = getApiUrl('/api/health');
+        console.log("Checking health at:", url);
+        const res = await fetch(url);
         const data = await res.json();
-        console.log("API Health Check (v2):", data);
+        console.log("API Health Check (v4):", data);
       } catch (e) {
-        console.error("API Health Check FAILED:", e);
+        console.error("API Health Check FAILED (v4):", e);
       }
     };
     checkHealth();
 
     const fetchPrayers = async () => {
       try {
-        const response = await fetch('/api/prayers');
+        const url = getApiUrl('/api/prayers');
+        console.log("Fetching prayers from:", url);
+        const response = await fetch(url);
         const contentType = response.headers.get("content-type");
         
         if (!response.ok) {
           const text = await response.text();
-          console.error('API Error Response:', text);
-          throw new Error(`Server error: ${response.status}`);
+          console.error('API Error Response (v4):', text);
+          throw new Error(`Server error: ${response.status}. ${text.substring(0, 50)}`);
         }
 
         if (contentType && contentType.includes("application/json")) {
@@ -59,11 +72,11 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
           setPrayers(data);
         } else {
           const text = await response.text();
-          console.error('Non-JSON response received:', text);
+          console.error('Non-JSON response received (v4):', text);
           throw new Error('Серверээс буруу хариу ирлээ (JSON биш).');
         }
       } catch (error: any) {
-        console.error('Failed to fetch prayers:', error);
+        console.error('Failed to fetch prayers (v4):', error);
         setErrorMessage(error.message || 'Залбирлуудыг ачаалахад алдаа гарлаа.');
       } finally {
         setLoading(false);
@@ -76,20 +89,21 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     e.preventDefault();
     if (!newPrayer.trim()) return;
 
-    console.log("handleSubmit triggered with:", newPrayer);
+    console.log("handleSubmit triggered (v4) with:", newPrayer);
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
     
     try {
-      console.log("Submitting prayer to /api/prayers...");
+      const url = getApiUrl('/api/prayers');
+      console.log("Submitting prayer to (v4):", url);
       const payload = {
         author: user ? user.name : 'Зочин',
         text: newPrayer.trim()
       };
-      console.log("Payload (v3):", JSON.stringify(payload));
+      console.log("Payload (v4):", JSON.stringify(payload));
 
-      const response = await fetch('/api/prayers', {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -99,26 +113,26 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       });
       
       const contentType = response.headers.get("content-type");
-      console.log("Response status (v3):", response.status);
-      console.log("Response content-type (v3):", contentType);
+      console.log("Response status (v4):", response.status);
+      console.log("Response content-type (v4):", contentType);
 
       if (!response.ok) {
         let errorMsg = `Server error: ${response.status}`;
         if (contentType && contentType.includes("application/json")) {
           try {
             const errorData = await response.json();
-            console.log("Error data received (v3):", errorData);
+            console.log("Error data received (v4):", errorData);
             if (errorData.error) {
               errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
             } else if (errorData.message) {
               errorMsg = typeof errorData.message === 'string' ? errorData.message : JSON.stringify(errorData.message);
             }
           } catch (e) {
-            console.error("Failed to parse error JSON (v3)");
+            console.error("Failed to parse error JSON (v4)");
           }
         } else {
           const errorText = await response.text();
-          console.error('Non-JSON error response (v3):', errorText);
+          console.error('Non-JSON error response (v4):', errorText);
           errorMsg = `Серверээс алдаа ирлээ (${response.status}). Хариу: ${errorText.substring(0, 100)}`;
         }
         throw new Error(errorMsg);
@@ -126,7 +140,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
-        console.log("Submission successful (v3):", data);
+        console.log("Submission successful (v4):", data);
         setPrayers([data, ...prayers]);
         setNewPrayer('');
         setSubmitStatus('success');
@@ -136,16 +150,15 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         }, 2000);
       } else {
         const text = await response.text();
-        console.error("Expected JSON but got (v3):", text);
+        console.error("Expected JSON but got (v4):", text);
         throw new Error('Серверээс JSON биш хариу ирлээ.');
       }
     } catch (error: any) {
-      console.error('CRITICAL ERROR during prayer submission (v3):', error);
+      console.error('CRITICAL ERROR during prayer submission (v4):', error);
       setSubmitStatus('error');
       
       let debugInfo = '';
       try {
-        // Capture as much info as possible
         const errorObj: any = {};
         if (error instanceof Error) {
           errorObj.name = error.name;
@@ -171,9 +184,8 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         msg = typeof error.message === 'string' ? error.message : JSON.stringify(error.message);
       }
       
-      // If we still have a generic message or [object Object], use the debug info
       if (!msg || msg === '[object Object]' || msg === 'Алдаа гарлаа. Дахин оролдоно уу.') {
-        msg = `Алдаа (v3): ${debugInfo.substring(0, 150)}`;
+        msg = `Алдаа (v4): ${debugInfo.substring(0, 150)}`;
       }
       
       setErrorMessage(msg);
@@ -185,14 +197,15 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   const handlePray = async (id: string) => {
     // Optimistic update
     const prayer = prayers.find(p => p.id === id);
-    if (!prayer || prayer.isPrayed) return; // Prevent multiple clicks for now or handle toggle if needed
+    if (!prayer || prayer.isPrayed) return;
 
     setPrayers(prayers.map(p => p.id === id ? { ...p, prayCount: p.prayCount + 1, isPrayed: true } : p));
 
     try {
-      await fetch(`/api/prayers/${id}/pray`, { method: 'POST' });
+      const url = getApiUrl(`/api/prayers/${id}/pray`);
+      await fetch(url, { method: 'POST' });
     } catch (error) {
-      console.error('Failed to pray:', error);
+      console.error('Failed to pray (v4):', error);
       // Revert on error
       setPrayers(prayers.map(p => p.id === id ? { ...p, prayCount: p.prayCount - 1, isPrayed: false } : p));
     }

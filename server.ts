@@ -17,15 +17,15 @@ async function startServer() {
   
   console.log("PRAYERS_FILE path:", PRAYERS_FILE);
 
+  // 1. Request logger (Move to top)
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host}`);
+    next();
+  });
+
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cors());
-
-  // Request logger
-  app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    next();
-  });
 
   // Body parsing error handler
   app.use((err: any, req: any, res: any, next: any) => {
@@ -116,6 +116,10 @@ async function startServer() {
 
   app.post("/api/echo", (req, res) => {
     res.json({ body: req.body, type: typeof req.body });
+  });
+
+  app.get("/api/ping", (req, res) => {
+    res.json({ status: "pong", time: new Date().toISOString() });
   });
 
   app.get("/api/health", (req, res) => {

@@ -32,6 +32,17 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        console.log("API Health Check (v2):", data);
+      } catch (e) {
+        console.error("API Health Check FAILED:", e);
+      }
+    };
+    checkHealth();
+
     const fetchPrayers = async () => {
       try {
         const response = await fetch('/api/prayers');
@@ -65,22 +76,26 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     e.preventDefault();
     if (!newPrayer.trim()) return;
 
+    console.log("handleSubmit triggered with:", newPrayer);
     setIsSubmitting(true);
     setSubmitStatus('idle');
     setErrorMessage('');
     
     try {
-      console.log("Submitting prayer...");
+      console.log("Submitting prayer to /api/prayers...");
+      const payload = {
+        author: user ? user.name : 'Зочин',
+        text: newPrayer.trim()
+      };
+      console.log("Payload:", JSON.stringify(payload));
+
       const response = await fetch('/api/prayers', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          author: user ? user.name : 'Зочин',
-          text: newPrayer
-        })
+        body: JSON.stringify(payload)
       });
       
       const contentType = response.headers.get("content-type");
@@ -114,21 +129,31 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         throw new Error('Серверээс JSON биш хариу ирлээ.');
       }
     } catch (error: any) {
-      console.error('Failed to submit prayer:', error);
+      console.error('CRITICAL ERROR during prayer submission:', error);
       setSubmitStatus('error');
       
+      let debugInfo = '';
+      try {
+        debugInfo = JSON.stringify(error, Object.getOwnPropertyNames(error));
+      } catch (e) {
+        debugInfo = 'Could not stringify error';
+      }
+
       let msg = 'Алдаа гарлаа. Дахин оролдоно уу.';
       
-      if (typeof error === 'string') {
+      if (error instanceof Error) {
+        msg = error.message;
+      } else if (typeof error === 'string') {
         msg = error;
-      } else if (error && typeof error.message === 'string') {
-        // If message is "[object Object]", we should use a fallback
-        msg = error.message === '[object Object]' ? 'Серверээс тодорхойгүй алдаа ирлээ.' : error.message;
-      } else if (error && typeof error.error === 'string') {
-        msg = error.error;
-      } else if (error && typeof error.toString === 'function') {
-        const str = error.toString();
-        msg = str === '[object Object]' ? 'Серверээс тодорхойгүй алдаа ирлээ.' : str;
+      } else if (error && error.error) {
+        msg = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+      } else if (error && error.message) {
+        msg = error.message;
+      }
+      
+      // If we still have a generic message or [object Object], use the debug info
+      if (!msg || msg === '[object Object]' || msg === 'Алдаа гарлаа. Дахин оролдоно уу.') {
+        msg = `Алдаа (v2): ${debugInfo.substring(0, 100)}`;
       }
       
       setErrorMessage(msg);

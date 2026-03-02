@@ -5,6 +5,8 @@ import fs from "fs";
 import path from "path";
 import cors from "cors";
 
+console.log("SERVER.TS LOADED - " + new Date().toISOString());
+
 async function startServer() {
   console.log("Starting server...");
   console.log("NODE_ENV:", process.env.NODE_ENV);
@@ -15,8 +17,24 @@ async function startServer() {
   
   console.log("PRAYERS_FILE path:", PRAYERS_FILE);
 
-  app.use(express.json());
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   app.use(cors());
+
+  // Request logger
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+  });
+
+  // Body parsing error handler
+  app.use((err: any, req: any, res: any, next: any) => {
+    if (err instanceof SyntaxError && 'body' in err) {
+      console.error("JSON Syntax Error:", err);
+      return res.status(400).json({ error: "Буруу форматтай JSON өгөгдөл ирлээ." });
+    }
+    next(err);
+  });
 
   // Initialize prayers file if it doesn't exist
   if (!fs.existsSync(PRAYERS_FILE)) {
@@ -47,17 +65,32 @@ async function startServer() {
 
   const getPrayers = () => {
     try {
-      return JSON.parse(fs.readFileSync(PRAYERS_FILE, "utf-8"));
+      if (!fs.existsSync(PRAYERS_FILE)) {
+        console.log("Prayers file does not exist, returning empty array.");
+        return [];
+      }
+      const data = fs.readFileSync(PRAYERS_FILE, "utf-8");
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed)) {
+        console.error("Prayers file content is not an array!");
+        return [];
+      }
+      return parsed;
     } catch (e) {
+      console.error("CRITICAL ERROR reading prayers file:", e);
       return [];
     }
   };
   
   const savePrayers = (prayers: any) => {
     try {
+      if (!Array.isArray(prayers)) {
+        throw new Error("Attempted to save non-array to prayers file");
+      }
       fs.writeFileSync(PRAYERS_FILE, JSON.stringify(prayers, null, 2));
+      console.log(`Successfully saved ${prayers.length} prayers to file.`);
     } catch (e) {
-      console.error("Failed to save prayers to file:", e);
+      console.error("CRITICAL ERROR saving prayers to file:", e);
       throw e;
     }
   };
@@ -69,9 +102,26 @@ async function startServer() {
     next();
   });
 
+  app.get("/api/test-fs", (req, res) => {
+    try {
+      const testFile = path.join(process.cwd(), "test-write.txt");
+      fs.writeFileSync(testFile, "test " + new Date().toISOString());
+      const content = fs.readFileSync(testFile, "utf-8");
+      fs.unlinkSync(testFile);
+      res.json({ status: "ok", writeRead: content });
+    } catch (e: any) {
+      res.status(500).json({ status: "error", message: e.message });
+    }
+  });
+
+  app.post("/api/echo", (req, res) => {
+    res.json({ body: req.body, type: typeof req.body });
+  });
+
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
+      v: 2,
       time: new Date().toISOString(),
       env: process.env.NODE_ENV || 'development'
     });
@@ -89,14 +139,14 @@ async function startServer() {
   });
 
   app.post("/api/prayers", (req, res) => {
-    console.log(">>> POST /api/prayers <<<");
-    console.log("Headers:", req.headers);
+    console.log(">>> POST /api/prayers RECEIVED <<<");
+    console.log("Timestamp:", new Date().toISOString());
+    console.log("Headers:", JSON.stringify(req.headers));
     console.log("Body:", JSON.stringify(req.body));
     
-    if (!req.body || typeof req.body !== 'object') {
-      const errorMsg = `Invalid request body type: ${typeof req.body}`;
-      console.error(errorMsg);
-      return res.status(400).json({ error: "Хүсэлтийн формат буруу байна." });
+    if (!req.body || Object.keys(req.body).length === 0) {
+      console.error("Empty request body received!");
+      return res.status(400).json({ error: "Хүсэлтийн бие хоосон байна." });
     }
 
     const { author, text } = req.body;
@@ -185,8 +235,17 @@ async function startServer() {
 
   // Global error handler
   app.use((err: any, req: any, res: any, next: any) => {
-    console.error("GLOBAL ERROR:", err);
-    res.status(500).json({ error: "Сервер дээр тодорхойгүй алдаа гарлаа. " + (err.message || "") });
+    console.error("!!! GLOBAL ERROR !!!");
+    console.error("Message:", err.message);
+    console.error("Stack:", err.stack);
+    console.error("Request URL:", req.url);
+    console.error("Request Method:", req.method);
+    
+    res.status(500).json({ 
+      error: "Сервер дээр тодорхойгүй алдаа гарлаа.",
+      message: err.message || "No message",
+      stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+    });
   });
 
   app.listen(PORT, "0.0.0.0", () => {

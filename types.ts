@@ -16,10 +16,3 @@ export interface Event {
   location: string;
   description: string;
 }
-
-export interface Ministry {
-  id: string;
-  name: string;
-  icon: string;
-  description: string;
-}

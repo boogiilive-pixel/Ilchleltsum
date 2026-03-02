@@ -17,7 +17,7 @@ import {
   Navigation,
   AlertCircle
 } from 'lucide-react';
-import { SUBMIT_URL } from '../App.tsx';
+import { SUBMIT_URL } from '../App';
 
 const ContactPage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');

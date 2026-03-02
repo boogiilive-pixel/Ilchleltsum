@@ -24,8 +24,8 @@ import {
   AlertCircle,
   Home
 } from 'lucide-react';
-import { Event } from '../types.ts';
-import { User, SUBMIT_URL, isValidEmail } from '../App.tsx';
+import { Event } from '../types';
+import { User, SUBMIT_URL, isValidEmail } from '../App';
 
 const HEADER_IMAGE = "https://lh3.googleusercontent.com/d/1ai_6o6PLa0IwGChs8IrZx3eypRknz9bs";
 

@@ -31,6 +31,7 @@ import ContactPage from './pages/ContactPage.tsx';
 import DonationPage from './pages/DonationPage.tsx';
 import InfoPage from './pages/InfoPage.tsx';
 import MinistryPage from './pages/MinistryPage.tsx';
+import PrayerPage from './pages/PrayerPage.tsx';
 import TestimonialSection from './components/TestimonialSection.tsx';
 import MouseFollower from './components/MouseFollower.tsx';
 
@@ -47,6 +48,7 @@ const NAV_LINKS = [
   { name: 'Нүүр', path: '/' },
   { name: 'Сургаал', path: '/sermons' },
   { name: 'Мэдээлэл', path: '/info' },
+  { name: 'Залбирал', path: '/prayer' },
   { name: 'Үйл ажиллагаа', path: '/events' },
   { name: 'Хандив', path: '/donation' },
   { name: 'Холбоо барих', path: '/contact' },
@@ -403,6 +405,7 @@ const AppContent: React.FC = () => {
           <Route path="/ministry" element={<MinistryPage user={user} />} />
           <Route path="/donation" element={<DonationPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/prayer" element={<PrayerPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
         </Routes>
       </main>
       <TestimonialSection />

@@ -4,7 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 export const getEncouragement = async (topic: string): Promise<string> => {
   // Use process.env.API_KEY directly as per the coding guidelines
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || process.env.API_KEY });
     
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",

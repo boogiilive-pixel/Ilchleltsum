@@ -5,154 +5,34 @@ import {
   RefreshCw, 
   Sparkles, 
   ExternalLink,
-  Play
+  Play,
+  AlertCircle
 } from 'lucide-react';
-
-interface YouTubeVideo {
-  id: string;
-  title: string;
-  link: string;
-  pubDate: string;
-  thumbnail: string;
-  author: string;
-}
-
-const CHANNEL_ID = 'UC87i3_n-zR6xNfR_Yy-Y75A'; // @ilchlelt channel ID
-const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
-
-// Таны өгсөн бичлэгүүд болон нэмэлтүүд
-const FALLBACK_VIDEOS: YouTubeVideo[] = [
-  {
-    id: 'Q4TXZUBR0yA',
-    title: 'Сургаал ба Залбирал | Илчлэлт Сүм',
-    link: 'https://youtu.be/Q4TXZUBR0yA',
-    pubDate: '2024-03-01',
-    thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'JDwKU9aAw74',
-    title: 'Итгэлийн хүч - Магтан хүндэтгэл',
-    link: 'https://youtu.be/JDwKU9aAw74',
-    pubDate: '2024-02-28',
-    thumbnail: 'https://img.youtube.com/vi/JDwKU9aAw74/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: '4AoPz2YVyuI',
-    title: 'Бурханы хайр бидний амьдралд',
-    link: 'https://youtu.be/4AoPz2YVyuI',
-    pubDate: '2024-02-25',
-    thumbnail: 'https://img.youtube.com/vi/4AoPz2YVyuI/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'B9Z1MMpKJAQ',
-    title: 'Сүнслэг өсөлт ба нөхөрлөл',
-    link: 'https://youtu.be/B9Z1MMpKJAQ',
-    pubDate: '2024-02-20',
-    thumbnail: 'https://img.youtube.com/vi/B9Z1MMpKJAQ/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: '1TBJdqg0XWk',
-    title: 'Библийн гүнзгийрүүлсэн судлал',
-    link: 'https://youtu.be/1TBJdqg0XWk',
-    pubDate: '2024-02-15',
-    thumbnail: 'https://img.youtube.com/vi/1TBJdqg0XWk/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'y515MrzLqqw',
-    title: 'Гэр бүлийн цуглаан - Сургаал',
-    link: 'https://youtu.be/y515MrzLqqw',
-    pubDate: '2024-02-10',
-    thumbnail: 'https://img.youtube.com/vi/y515MrzLqqw/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: '-oYxPfGYdaw',
-    title: 'Итгэл найдвар биднийг хөтөлнө',
-    link: 'https://youtu.be/-oYxPfGYdaw',
-    pubDate: '2024-02-05',
-    thumbnail: 'https://img.youtube.com/vi/-oYxPfGYdaw/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'd80xFbQ1ry8',
-    title: 'Бурханы Үг - Амьдралын Гэрэл | Илчлэлт Сүм',
-    link: 'https://youtu.be/d80xFbQ1ry8',
-    pubDate: '2024-03-20',
-    thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  }
-];
-
-const getTagValue = (entry: Element, tagName: string): string => {
-  try {
-    const elements = entry.getElementsByTagName('*');
-    for (let i = 0; i < elements.length; i++) {
-      const nodeName = elements[i].localName || elements[i].nodeName.split(':').pop();
-      if (nodeName && nodeName.toLowerCase() === tagName.toLowerCase()) {
-        return elements[i].textContent || '';
-      }
-    }
-  } catch (e) {
-    return '';
-  }
-  return '';
-};
+import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS } from '../sermonService';
 
 const SermonPage: React.FC = () => {
   const [videos, setVideos] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS);
   const [loading, setLoading] = useState(false);
 
-  const fetchLatestSermons = useCallback(async () => {
+  const [error, setError] = useState<string | null>(null);
+
+  const loadSermons = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(RSS_URL)}&timestamp=${Date.now()}`;
-      const response = await fetch(proxyUrl);
-      if (!response.ok) throw new Error('Fetch failed');
-      
-      const data = await response.json();
-      if (!data.contents) throw new Error('No content');
-
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-      const entries = Array.from(xmlDoc.getElementsByTagName("entry"));
-      
-      if (entries.length > 0) {
-        const fetchedVideos: YouTubeVideo[] = entries.map(entry => {
-          const videoId = getTagValue(entry, "videoId");
-          return {
-            id: videoId,
-            title: getTagValue(entry, "title") || "Сургаал",
-            link: `https://www.youtube.com/watch?v=${videoId}`,
-            pubDate: getTagValue(entry, "published"),
-            thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-            author: 'Илчлэлт Сүм'
-          };
-        }).filter(v => v.id);
-
-        if (fetchedVideos.length > 0) {
-          setVideos(prev => {
-            const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
-            const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
-            return unique;
-          });
-        }
-      }
+      const fetchedVideos = await fetchSermons();
+      setVideos(fetchedVideos);
     } catch (err) {
-      console.warn('RSS sync failed, using current list');
-      setVideos(FALLBACK_VIDEOS);
+      console.error("Failed to load sermons:", err);
+      setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchLatestSermons();
-  }, [fetchLatestSermons]);
+    loadSermons();
+  }, [loadSermons]);
 
   const handleOpenYouTube = (video: YouTubeVideo) => {
     window.open(video.link, '_blank', 'noopener,noreferrer');
@@ -163,6 +43,14 @@ const SermonPage: React.FC = () => {
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 font-bold animate-in slide-in-from-top duration-300">
+            <AlertCircle className="w-5 h-5" />
+            {error}
+          </div>
+        )}
+
         {/* Featured Video Section */}
         {heroVideo && (
           <section className="mb-20">
@@ -206,7 +94,7 @@ const SermonPage: React.FC = () => {
           </div>
           <div className="flex gap-4">
             <button 
-              onClick={fetchLatestSermons}
+              onClick={loadSermons}
               disabled={loading}
               className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm font-bold text-slate-600"
             >

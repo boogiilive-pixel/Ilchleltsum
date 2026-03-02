@@ -7,7 +7,7 @@ const MouseFollower: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const cursorRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const followerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const requestRef = useRef<number>(null);
+  const requestRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Check if device has a mouse

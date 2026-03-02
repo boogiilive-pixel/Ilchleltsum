@@ -49,20 +49,30 @@ async function startServer() {
   });
 
   app.post("/api/prayers", (req, res) => {
+    console.log("POST /api/prayers", req.body);
     const { author, text } = req.body;
-    if (!text) return res.status(400).json({ error: "Text is required" });
+    if (!text) {
+      console.log("Error: Text is required");
+      return res.status(400).json({ error: "Text is required" });
+    }
     
-    const prayers = getPrayers();
-    const newPrayer = {
-      id: Math.random().toString(36).substr(2, 9),
-      author: author || 'Зочин',
-      text,
-      date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-      prayCount: 0
-    };
-    prayers.unshift(newPrayer);
-    savePrayers(prayers);
-    res.json(newPrayer);
+    try {
+      const prayers = getPrayers();
+      const newPrayer = {
+        id: Math.random().toString(36).substr(2, 9),
+        author: author || 'Зочин',
+        text,
+        date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+        prayCount: 0
+      };
+      prayers.unshift(newPrayer);
+      savePrayers(prayers);
+      console.log("Successfully added prayer:", newPrayer.id);
+      res.json(newPrayer);
+    } catch (error) {
+      console.error("Failed to add prayer:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
   });
 
   app.post("/api/prayers/:id/pray", (req, res) => {

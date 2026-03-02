@@ -28,6 +28,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const fetchPrayers = async () => {
@@ -49,6 +50,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
     if (!newPrayer.trim()) return;
 
     setIsSubmitting(true);
+    setSubmitStatus('idle');
     
     try {
       const response = await fetch('/api/prayers', {
@@ -59,12 +61,20 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
           text: newPrayer
         })
       });
+      
+      if (!response.ok) throw new Error('Failed to submit');
+      
       const data = await response.json();
       setPrayers([data, ...prayers]);
       setNewPrayer('');
-      setShowForm(false);
+      setSubmitStatus('success');
+      setTimeout(() => {
+        setShowForm(false);
+        setSubmitStatus('idle');
+      }, 2000);
     } catch (error) {
       console.error('Failed to submit prayer:', error);
+      setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
     }
@@ -117,17 +127,36 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
                 <textarea 
                   required
                   value={newPrayer}
-                  onChange={(e) => setNewPrayer(e.target.value)}
+                  onChange={(e) => {
+                    setNewPrayer(e.target.value);
+                    if (submitStatus !== 'idle') setSubmitStatus('idle');
+                  }}
                   placeholder="Залбирлын хүсэлтээ энд бичнэ үү..."
                   className="w-full p-6 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-teal-500 outline-none font-medium min-h-[150px] resize-none"
                 />
-                <div className="flex justify-end">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex-grow">
+                    {submitStatus === 'success' && (
+                      <div className="flex items-center gap-2 text-emerald-600 font-bold animate-in fade-in slide-in-from-left-2">
+                        <CheckCircle2 className="w-5 h-5" />
+                        Амжилттай илгээгдлээ.
+                      </div>
+                    )}
+                    {submitStatus === 'error' && (
+                      <div className="flex items-center gap-2 text-red-600 font-bold animate-in fade-in slide-in-from-left-2">
+                        <AlertCircle className="w-5 h-5" />
+                        Алдаа гарлаа. Дахин оролдоно уу.
+                      </div>
+                    )}
+                  </div>
                   <button 
                     type="submit" 
-                    disabled={isSubmitting}
-                    className="flex items-center gap-2 px-8 py-4 bg-teal-700 text-white rounded-2xl font-bold hover:bg-teal-800 transition-all shadow-lg disabled:opacity-50"
+                    disabled={isSubmitting || submitStatus === 'success'}
+                    className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-bold transition-all shadow-lg disabled:opacity-50 ${
+                      submitStatus === 'success' ? 'bg-emerald-600 text-white' : 'bg-teal-700 text-white hover:bg-teal-800'
+                    }`}
                   >
-                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5" /> Илгээх</>}
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : submitStatus === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <><Send className="w-5 h-5" /> Илгээх</>}
                   </button>
                 </div>
               </form>

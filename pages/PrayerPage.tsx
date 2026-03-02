@@ -34,19 +34,26 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
   // Use absolute URL if we are on a different domain (e.g. ilchlelt.com vs run.app)
   const getApiUrl = (path: string) => {
     // Hardcoded fallback for the current environment if process.env.APP_URL is missing
-    const FALLBACK_APP_URL = 'https://ais-dev-nwirquaywi2fngd7olqw3r-31438464689.asia-northeast1.run.app';
-    const appUrl = (process.env.APP_URL || FALLBACK_APP_URL).replace(/\/$/, '');
+    const SHARED_APP_URL = 'https://ais-pre-nwirquaywi2fngd7olqw3r-31438464689.asia-northeast1.run.app';
+    const DEV_APP_URL = 'https://ais-dev-nwirquaywi2fngd7olqw3r-31438464689.asia-northeast1.run.app';
     
-    // Ensure path starts with /
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    let appUrl = (process.env.APP_URL || SHARED_APP_URL).replace(/\/$/, '');
     
-    // If we are on a different origin, use absolute URL
-    if (appUrl && window.location.origin !== appUrl && !path.startsWith('http')) {
+    // If we are on a different origin (like Vercel), we MUST use the Shared App URL (ais-pre)
+    // because the Dev App URL (ais-dev) requires authentication and will cause CORS errors.
+    if (window.location.origin !== appUrl && !path.startsWith('http')) {
+      // If the current appUrl is the dev one, swap it for the shared one
+      if (appUrl.includes('ais-dev-')) {
+        appUrl = appUrl.replace('ais-dev-', 'ais-pre-');
+      }
+      
+      const normalizedPath = path.startsWith('/') ? path : `/${path}`;
       const fullUrl = `${appUrl}${normalizedPath}`;
+      console.log(`[API] Cross-origin request detected from ${window.location.origin}. Using Shared API URL: ${fullUrl}`);
       return fullUrl;
     }
     
-    return normalizedPath;
+    return path.startsWith('/') ? path : `/${path}`;
   };
 
   useEffect(() => {

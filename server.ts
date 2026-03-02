@@ -28,8 +28,12 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   
   // 2. CORS (Must be before routes)
+  // When credentials: true is used, origin cannot be '*'
   app.use(cors({
-    origin: '*', 
+    origin: (origin, callback) => {
+      // Allow all origins for now to fix the Vercel issue
+      callback(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true
@@ -114,7 +118,7 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
-      v: 4,
+      v: 5,
       time: new Date().toISOString(),
       env: process.env.NODE_ENV || 'development'
     });

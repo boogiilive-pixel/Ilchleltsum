@@ -87,7 +87,7 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         author: user ? user.name : 'Зочин',
         text: newPrayer.trim()
       };
-      console.log("Payload:", JSON.stringify(payload));
+      console.log("Payload (v3):", JSON.stringify(payload));
 
       const response = await fetch('/api/prayers', {
         method: 'POST',
@@ -99,23 +99,34 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       });
       
       const contentType = response.headers.get("content-type");
-      console.log("Response status:", response.status);
-      console.log("Response content-type:", contentType);
+      console.log("Response status (v3):", response.status);
+      console.log("Response content-type (v3):", contentType);
 
       if (!response.ok) {
+        let errorMsg = `Server error: ${response.status}`;
         if (contentType && contentType.includes("application/json")) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Server error: ${response.status}`);
+          try {
+            const errorData = await response.json();
+            console.log("Error data received (v3):", errorData);
+            if (errorData.error) {
+              errorMsg = typeof errorData.error === 'string' ? errorData.error : JSON.stringify(errorData.error);
+            } else if (errorData.message) {
+              errorMsg = typeof errorData.message === 'string' ? errorData.message : JSON.stringify(errorData.message);
+            }
+          } catch (e) {
+            console.error("Failed to parse error JSON (v3)");
+          }
         } else {
           const errorText = await response.text();
-          console.error('Non-JSON error response:', errorText);
-          throw new Error(`Серверээс алдаа ирлээ (${response.status}). Хариу: ${errorText.substring(0, 50)}...`);
+          console.error('Non-JSON error response (v3):', errorText);
+          errorMsg = `Серверээс алдаа ирлээ (${response.status}). Хариу: ${errorText.substring(0, 100)}`;
         }
+        throw new Error(errorMsg);
       }
       
       if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
-        console.log("Submission successful:", data);
+        console.log("Submission successful (v3):", data);
         setPrayers([data, ...prayers]);
         setNewPrayer('');
         setSubmitStatus('success');
@@ -125,18 +136,27 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
         }, 2000);
       } else {
         const text = await response.text();
-        console.error("Expected JSON but got:", text);
+        console.error("Expected JSON but got (v3):", text);
         throw new Error('Серверээс JSON биш хариу ирлээ.');
       }
     } catch (error: any) {
-      console.error('CRITICAL ERROR during prayer submission:', error);
+      console.error('CRITICAL ERROR during prayer submission (v3):', error);
       setSubmitStatus('error');
       
       let debugInfo = '';
       try {
-        debugInfo = JSON.stringify(error, Object.getOwnPropertyNames(error));
+        // Capture as much info as possible
+        const errorObj: any = {};
+        if (error instanceof Error) {
+          errorObj.name = error.name;
+          errorObj.message = error.message;
+          errorObj.stack = error.stack;
+        } else {
+          errorObj.raw = error;
+        }
+        debugInfo = JSON.stringify(errorObj);
       } catch (e) {
-        debugInfo = 'Could not stringify error';
+        debugInfo = 'Could not stringify error: ' + String(error);
       }
 
       let msg = 'Алдаа гарлаа. Дахин оролдоно уу.';
@@ -148,12 +168,12 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       } else if (error && error.error) {
         msg = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
       } else if (error && error.message) {
-        msg = error.message;
+        msg = typeof error.message === 'string' ? error.message : JSON.stringify(error.message);
       }
       
       // If we still have a generic message or [object Object], use the debug info
       if (!msg || msg === '[object Object]' || msg === 'Алдаа гарлаа. Дахин оролдоно уу.') {
-        msg = `Алдаа (v2): ${debugInfo.substring(0, 100)}`;
+        msg = `Алдаа (v3): ${debugInfo.substring(0, 150)}`;
       }
       
       setErrorMessage(msg);

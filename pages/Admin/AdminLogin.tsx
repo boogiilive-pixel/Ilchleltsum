@@ -15,6 +15,9 @@ const AdminLogin: React.FC = () => {
     setError('');
 
     try {
+      const fullUrl = `${window.location.origin}/api/admin/login`;
+      console.log(`[DEBUG] Fetching: ${fullUrl}`);
+      
       const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

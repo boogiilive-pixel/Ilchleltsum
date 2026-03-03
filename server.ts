@@ -21,6 +21,32 @@ async function startServer() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 
+  // --- Data Management Helpers ---
+  const getFilePath = (filename: string) => path.join(DATA_DIR, filename);
+  
+  const readData = (filename: string) => {
+    try {
+      const filePath = getFilePath(filename);
+      if (!fs.existsSync(filePath)) return [];
+      const content = fs.readFileSync(filePath, "utf-8");
+      return JSON.parse(content || "[]");
+    } catch (e) {
+      console.error(`Error reading ${filename}:`, e);
+      return [];
+    }
+  };
+
+  const writeData = (filename: string, data: any) => {
+    try {
+      const filePath = getFilePath(filename);
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+      return true;
+    } catch (e) {
+      console.error(`Error writing ${filename}:`, e);
+      return false;
+    }
+  };
+
   // 2. CORS - Extremely permissive and explicit for cross-domain debugging
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -47,9 +73,16 @@ async function startServer() {
     next();
   });
 
-  // 1. Request logger
+  // 1. Request logger with file logging for debugging
+  const LOG_FILE = getFilePath("server.log");
   app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host} - Origin: ${req.headers.origin}`);
+    const logEntry = `[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host} - Origin: ${req.headers.origin}\n`;
+    console.log(logEntry.trim());
+    try {
+      fs.appendFileSync(LOG_FILE, logEntry);
+    } catch (e) {
+      // Ignore logging errors
+    }
     next();
   });
 
@@ -73,32 +106,6 @@ async function startServer() {
       env: process.env.NODE_ENV || 'development'
     });
   });
-
-  // --- Data Management Helpers ---
-  const getFilePath = (filename: string) => path.join(DATA_DIR, filename);
-  
-  const readData = (filename: string) => {
-    try {
-      const filePath = getFilePath(filename);
-      if (!fs.existsSync(filePath)) return [];
-      const content = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(content || "[]");
-    } catch (e) {
-      console.error(`Error reading ${filename}:`, e);
-      return [];
-    }
-  };
-
-  const writeData = (filename: string, data: any) => {
-    try {
-      const filePath = getFilePath(filename);
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
-      return true;
-    } catch (e) {
-      console.error(`Error writing ${filename}:`, e);
-      return false;
-    }
-  };
 
   // --- API Routes ---
 
@@ -199,27 +206,40 @@ async function startServer() {
   });
 
   // Admin Login (Simple)
-  app.get("/api/admin/login", (req, res) => {
-    res.json({ message: "Admin login endpoint is active. Use POST to login." });
+  app.all("/api/admin/login", (req, res, next) => {
+    console.log(`[ADMIN LOGIN TRACE] ${req.method} ${req.url}`);
+    if (req.method === "POST") {
+      const { password } = req.body;
+      console.log(`[ADMIN LOGIN POST] Password provided: ${!!password}`);
+      
+      if (!password) {
+        return res.status(400).json({ success: false, message: "Нууц үг оруулна уу." });
+      }
+
+      if (password === "admin123") {
+        console.log("[ADMIN LOGIN] Success");
+        return res.json({ success: true, token: "mock-admin-token-" + Date.now() });
+      } else {
+        console.log(`[ADMIN LOGIN] Failed - Incorrect password`);
+        return res.status(401).json({ success: false, message: "Нууц үг буруу байна." });
+      }
+    } else if (req.method === "GET") {
+      return res.json({ message: "Admin login endpoint is active. Use POST to login." });
+    }
+    next();
   });
 
-  app.post(["/api/admin/login", "/api/admin/login/"], (req, res) => {
-    console.log(`[ADMIN LOGIN ATTEMPT] - ${new Date().toISOString()} - Method: ${req.method} - URL: ${req.url}`);
-    const { password } = req.body;
-    
-    if (!password) {
-      console.log("[ADMIN LOGIN] No password provided in request body");
-      return res.status(400).json({ success: false, message: "Нууц үг оруулна уу." });
-    }
-
-    // For demo purposes, we use a simple password. 
-    // In a real app, this would be a hashed password in a DB.
-    if (password === "admin123") {
-      console.log("[ADMIN LOGIN] Success");
-      res.json({ success: true, token: "mock-admin-token-" + Date.now() });
-    } else {
-      console.log(`[ADMIN LOGIN] Failed - Incorrect password: ${password}`);
-      res.status(401).json({ success: false, message: "Нууц үг буруу байна." });
+  app.get("/api/debug/logs", (req, res) => {
+    try {
+      const logFile = getFilePath("server.log");
+      if (fs.existsSync(logFile)) {
+        const logs = fs.readFileSync(logFile, "utf-8");
+        res.send(`<pre>${logs}</pre>`);
+      } else {
+        res.send("No logs found.");
+      }
+    } catch (e) {
+      res.status(500).send("Error reading logs");
     }
   });
 
@@ -264,9 +284,14 @@ async function startServer() {
     }
   });
 
-  // Catch-all for API routes
+  // Catch-all for API routes moved to after all specific routes
   app.all("/api/*", (req, res) => {
-    res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });
+    console.log(`[API 404] ${req.method} ${req.url}`);
+    res.status(404).json({ 
+      error: "API route not found", 
+      method: req.method, 
+      url: req.url 
+    });
   });
 
   const isProd = process.env.NODE_ENV === "production";

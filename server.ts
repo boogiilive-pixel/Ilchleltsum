@@ -14,10 +14,7 @@ async function startServer() {
   
   const app = express();
   const PORT = 3000;
-  const PRAYERS_FILE = path.join(process.cwd(), "prayers.json");
   
-  console.log("PRAYERS_FILE path:", PRAYERS_FILE);
-
   // 2. CORS - Extremely permissive and explicit for cross-domain debugging
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -54,74 +51,6 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
   // Body parsing error handler
-  app.use((err: any, req: any, res: any, next: any) => {
-    if (err instanceof SyntaxError && 'body' in err) {
-      console.error("JSON Syntax Error:", err);
-      return res.status(400).json({ error: "Буруу форматтай JSON өгөгдөл ирлээ." });
-    }
-    next(err);
-  });
-
-  // Initialize prayers file if it doesn't exist
-  if (!fs.existsSync(PRAYERS_FILE)) {
-    console.log("Initializing prayers.json...");
-    try {
-      fs.writeFileSync(PRAYERS_FILE, JSON.stringify([
-        {
-          id: '1',
-          author: 'Зочин',
-          text: 'Манай гэр бүлийн төлөө залбирч өгөөрэй. Бид бүгдээрээ эрүүл энх, аз жаргалтай байхыг хүсэж байна.',
-          date: '2024.03.01',
-          prayCount: 12
-        },
-        {
-          id: '2',
-          author: 'Дорж',
-          text: 'Шинэ ажилд орох гэж байгаа тул амжилт хүсэж залбирч өгнө үү.',
-          date: '2024.03.02',
-          prayCount: 5
-        }
-      ], null, 2));
-    } catch (err) {
-      console.error("Failed to initialize prayers.json:", err);
-    }
-  } else {
-    console.log("prayers.json already exists.");
-  }
-
-  const getPrayers = () => {
-    try {
-      if (!fs.existsSync(PRAYERS_FILE)) {
-        console.log("Prayers file does not exist, returning empty array.");
-        return [];
-      }
-      const data = fs.readFileSync(PRAYERS_FILE, "utf-8");
-      const parsed = JSON.parse(data);
-      if (!Array.isArray(parsed)) {
-        console.error("Prayers file content is not an array!");
-        return [];
-      }
-      return parsed;
-    } catch (e) {
-      console.error("CRITICAL ERROR reading prayers file:", e);
-      return [];
-    }
-  };
-  
-  const savePrayers = (prayers: any) => {
-    try {
-      if (!Array.isArray(prayers)) {
-        throw new Error("Attempted to save non-array to prayers file");
-      }
-      fs.writeFileSync(PRAYERS_FILE, JSON.stringify(prayers, null, 2));
-      console.log(`Successfully saved ${prayers.length} prayers to file.`);
-    } catch (e) {
-      console.error("CRITICAL ERROR saving prayers to file:", e);
-      throw e;
-    }
-  };
-
-  // API routes
   app.get("/api/ping", (req, res) => {
     res.json({ status: "pong", time: new Date().toISOString() });
   });
@@ -133,56 +62,6 @@ async function startServer() {
       time: new Date().toISOString(),
       env: process.env.NODE_ENV || 'development'
     });
-  });
-
-  app.get(["/api/prayers", "/api/prayers/"], (req, res) => {
-    console.log("Handling GET /api/prayers");
-    try {
-      const prayers = getPrayers();
-      res.json(prayers);
-    } catch (error) {
-      console.error("GET /api/prayers error:", error);
-      res.status(500).json({ error: "Failed to fetch prayers" });
-    }
-  });
-
-  app.post(["/api/prayers", "/api/prayers/"], (req, res) => {
-    console.log(">>> POST /api/prayers RECEIVED <<<");
-    const { author, text } = req.body;
-    
-    if (!text || typeof text !== 'string' || !text.trim()) {
-      return res.status(400).json({ error: "Залбирлын текст заавал байх ёстой." });
-    }
-    
-    try {
-      const prayers = getPrayers();
-      const newPrayer = {
-        id: Math.random().toString(36).substr(2, 9),
-        author: (typeof author === 'string' && author.trim() ? author.trim() : 'Зочин'),
-        text: text.trim(),
-        date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-        prayCount: 0
-      };
-      
-      prayers.unshift(newPrayer);
-      savePrayers(prayers);
-      res.status(201).json(newPrayer);
-    } catch (error: any) {
-      res.status(500).json({ error: `Сервер дээр алдаа гарлаа: ${error.message}` });
-    }
-  });
-
-  app.post(["/api/prayers/:id/pray", "/api/prayers/:id/pray/"], (req, res) => {
-    const { id } = req.params;
-    const prayers = getPrayers();
-    const prayer = prayers.find((p: any) => p.id === id);
-    if (prayer) {
-      prayer.prayCount += 1;
-      savePrayers(prayers);
-      res.json(prayer);
-    } else {
-      res.status(404).json({ error: "Prayer not found" });
-    }
   });
 
   // Catch-all for API routes

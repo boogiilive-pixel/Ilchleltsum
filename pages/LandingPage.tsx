@@ -211,18 +211,6 @@ const LandingPage: React.FC = () => {
               </div>
             ))}
           </div>
-          
-          {/* Prayer Wall CTA */}
-          <div className="mt-20 p-8 md:p-12 rounded-[48px] bg-teal-900 text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl group-hover:bg-teal-500/20 transition-all duration-700"></div>
-            <div className="relative z-10 text-center md:text-left">
-              <h3 className="text-3xl md:text-4xl font-black mb-4">Танд залбирал хэрэгтэй юу?</h3>
-              <p className="text-teal-100 text-lg max-w-xl font-medium">Бид таны төлөө залбирахад бэлэн байна. Залбирлын хананд хүсэлтээ үлдээж, хамтдаа Бурханы ивээлийг хүсэцгөөе.</p>
-            </div>
-            <Link to="/prayer" className="relative z-10 px-10 py-5 bg-white text-teal-900 rounded-full font-black text-xl hover:bg-teal-50 transition-all shadow-xl flex items-center gap-3 active:scale-95">
-              <Heart className="w-6 h-6 fill-teal-900" /> Залбирлын хана
-            </Link>
-          </div>
         </div>
       </section>
 

@@ -64,6 +64,39 @@ async function startServer() {
     });
   });
 
+  app.get("/api/sermons-rss", async (req, res) => {
+    try {
+      const CHANNEL_ID = 'UC87i3_n-zR6xNfR_Yy-Y75A';
+      const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+      
+      console.log(`[RSS Proxy] Fetching from YouTube: ${RSS_URL}`);
+      
+      const response = await fetch(RSS_URL, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`YouTube RSS fetch failed with status: ${response.status}`);
+      }
+      
+      const xml = await response.text();
+      
+      // Basic validation that it's actually XML
+      if (!xml.trim().startsWith('<?xml') && !xml.trim().startsWith('<feed')) {
+        console.error("[RSS Proxy] Received non-XML content:", xml.substring(0, 200));
+        throw new Error("Received non-XML content from YouTube");
+      }
+
+      res.set("Content-Type", "text/xml");
+      res.send(xml);
+    } catch (error: any) {
+      console.error("[RSS Proxy] Error:", error.message);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Catch-all for API routes
   app.all("/api/*", (req, res) => {
     res.status(404).json({ error: `API route not found: ${req.method} ${req.url}` });

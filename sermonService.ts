@@ -95,6 +95,9 @@ const getTagValue = (entry: Element, tagName: string): string => {
 
 export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
   const proxies = [
+    // 1. Local Server Proxy (Most reliable)
+    (url: string) => `/api/sermons-rss?t=${Date.now()}`,
+    // 2. External Proxies (Fallbacks)
     (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&timestamp=${Date.now()}`,
     (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&timestamp=${Date.now()}`,
     (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -109,7 +112,7 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
       console.log(`Attempting sync with proxy: ${proxyUrl}`);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
       const response = await fetch(proxyUrl, { signal: controller.signal });
       clearTimeout(timeoutId);
@@ -137,6 +140,10 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
       const parserError = xmlDoc.getElementsByTagName("parsererror");
       if (parserError.length > 0) {
         console.warn("XML parsing error details:", parserError[0].textContent);
+        // If it's the local proxy failing to parse, we want to know why
+        if (proxyUrl.startsWith('/api/')) {
+           console.error("Local proxy returned invalid XML:", xmlContent.substring(0, 500));
+        }
         throw new Error("XML parsing failed");
       }
 
@@ -173,6 +180,7 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
   }
 
   console.error('All RSS sync attempts failed. Last error:', lastError);
-  // We throw here so the UI can show the error state
-  throw new Error(lastError?.message || "Бүх холболтын оролдлого амжилтгүй боллоо.");
+  // If all attempts fail, we still return the fallback videos instead of crashing the UI
+  console.log("Returning fallback videos due to sync failure.");
+  return FALLBACK_VIDEOS;
 };

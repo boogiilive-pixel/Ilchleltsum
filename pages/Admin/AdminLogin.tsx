@@ -21,6 +21,18 @@ const AdminLogin: React.FC = () => {
         body: JSON.stringify({ password }),
       });
 
+      if (!response.ok) {
+        let errorMessage = 'Нэвтрэхэд алдаа гарлаа.';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || `Алдаа: ${response.status}`;
+        } catch (e) {
+          errorMessage = `Сервер алдаа заалаа: ${response.status}`;
+        }
+        setError(errorMessage);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {

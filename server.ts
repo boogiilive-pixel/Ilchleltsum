@@ -199,15 +199,36 @@ async function startServer() {
   });
 
   // Admin Login (Simple)
-  app.post("/api/admin/login", (req, res) => {
+  app.get("/api/admin/login", (req, res) => {
+    res.json({ message: "Admin login endpoint is active. Use POST to login." });
+  });
+
+  app.post(["/api/admin/login", "/api/admin/login/"], (req, res) => {
+    console.log(`[ADMIN LOGIN ATTEMPT] - ${new Date().toISOString()} - Method: ${req.method} - URL: ${req.url}`);
     const { password } = req.body;
+    
+    if (!password) {
+      console.log("[ADMIN LOGIN] No password provided in request body");
+      return res.status(400).json({ success: false, message: "Нууц үг оруулна уу." });
+    }
+
     // For demo purposes, we use a simple password. 
     // In a real app, this would be a hashed password in a DB.
     if (password === "admin123") {
+      console.log("[ADMIN LOGIN] Success");
       res.json({ success: true, token: "mock-admin-token-" + Date.now() });
     } else {
+      console.log(`[ADMIN LOGIN] Failed - Incorrect password: ${password}`);
       res.status(401).json({ success: false, message: "Нууц үг буруу байна." });
     }
+  });
+
+  app.get("/api/debug", (req, res) => {
+    res.json({ 
+      message: "API is reachable", 
+      time: new Date().toISOString(),
+      routes: ["/api/news", "/api/sermons", "/api/messages", "/api/gallery", "/api/admin/login"]
+    });
   });
 
   app.get("/api/sermons-rss", async (req, res) => {

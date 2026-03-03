@@ -18,21 +18,30 @@ async function startServer() {
   
   console.log("PRAYERS_FILE path:", PRAYERS_FILE);
 
-  // 2. CORS - Use the standard cors package for robustness
-  app.use(cors({
-    origin: (origin, callback) => {
-      // Reflect origin to support credentials: true
-      callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-    maxAge: 86400
-  }));
+  // 2. CORS - Extremely permissive and explicit for cross-domain debugging
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    
+    // Log for debugging
+    console.log(`[CORS DEBUG] ${req.method} ${req.url} - Origin: ${origin}`);
 
-  // Handle preflight manually just in case, though cors() handles it
-  app.options('*', (req, res) => {
-    res.sendStatus(204);
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'false'); // Changed to false as we use 'omit'
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization, Accept, Origin');
+    res.setHeader('Access-Control-Max-Age', '86400');
+
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+      console.log(`[CORS DEBUG] Handling OPTIONS preflight for ${req.url}`);
+      return res.status(204).send();
+    }
+    next();
   });
 
   // 1. Request logger

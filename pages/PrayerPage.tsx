@@ -61,7 +61,10 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       try {
         const url = getApiUrl('/api/health');
         console.log("Checking health at:", url);
-        const res = await fetch(url);
+        const res = await fetch(url, { 
+          mode: 'cors',
+          credentials: 'omit' // We don't need cookies for this API
+        });
         const data = await res.json();
         console.log("API Health Check (v5):", data);
       } catch (e) {
@@ -74,7 +77,10 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
       try {
         const url = getApiUrl('/api/prayers');
         console.log("Fetching prayers from:", url);
-        const response = await fetch(url);
+        const response = await fetch(url, { 
+          mode: 'cors',
+          credentials: 'omit'
+        });
         const contentType = response.headers.get("content-type");
         
         if (!response.ok) {
@@ -121,6 +127,8 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
 
       const response = await fetch(url, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -219,7 +227,11 @@ const PrayerPage: React.FC<{ user: User | null; onAuthClick: () => void }> = ({ 
 
     try {
       const url = getApiUrl(`/api/prayers/${id}/pray`);
-      await fetch(url, { method: 'POST' });
+      await fetch(url, { 
+        method: 'POST', 
+        mode: 'cors',
+        credentials: 'omit'
+      });
     } catch (error) {
       console.error('Failed to pray (v4):', error);
       // Revert on error

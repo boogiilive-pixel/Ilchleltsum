@@ -20,8 +20,16 @@ const SermonPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const fetchedVideos = await fetchSermons();
-      setVideos(fetchedVideos);
+      const [youtubeVideos, customSermonsRes] = await Promise.all([
+        fetchSermons(),
+        fetch('/api/sermons')
+      ]);
+      
+      const customSermons = await customSermonsRes.json();
+      
+      // Combine both sources, putting custom ones first or merging them
+      // Custom sermons are already in YouTubeVideo format from the admin panel
+      setVideos([...customSermons, ...youtubeVideos]);
     } catch (err) {
       console.error("Failed to load sermons:", err);
       setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");
@@ -38,7 +46,14 @@ const SermonPage: React.FC = () => {
     window.open(video.link, '_blank', 'noopener,noreferrer');
   };
 
-  const heroVideo = videos[0];
+  const heroVideo: YouTubeVideo = {
+    id: 'Q4TXZUBR0yA',
+    title: 'Номлол ба Залбирал | Илчлэлт Сүм',
+    link: 'https://www.youtube.com/watch?v=Q4TXZUBR0yA',
+    pubDate: '2024-03-01',
+    thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  };
 
   return (
     <div className="pt-24 pb-20 bg-slate-50 min-h-screen">
@@ -52,44 +67,42 @@ const SermonPage: React.FC = () => {
         )}
 
         {/* Featured Video Section */}
-        {heroVideo && (
-          <section className="mb-20">
-            <div 
-              className="relative rounded-[40px] md:rounded-[60px] overflow-hidden bg-slate-900 aspect-video md:aspect-[21/9] flex items-center justify-center shadow-2xl group cursor-pointer" 
-              onClick={() => handleOpenYouTube(heroVideo)}
-            >
-              <img 
-                src={heroVideo.thumbnail} 
-                alt={heroVideo.title} 
-                className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[5s]"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${heroVideo.id}/hqdefault.jpg`;
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
-              
-              <div className="relative z-10 text-center px-6 max-w-3xl">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600 text-white text-[10px] font-black mb-6 tracking-widest uppercase shadow-xl">
-                  <Sparkles className="w-3 h-3" /> Онцлох бичлэг
-                </div>
-                <h2 className="text-2xl md:text-5xl font-black text-white mb-8 line-clamp-2 leading-tight">
-                  {heroVideo.title}
-                </h2>
-                <div className="flex justify-center">
-                  <div className="flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-2xl font-black text-lg hover:bg-red-600 hover:text-white transition-all shadow-2xl active:scale-95 group">
-                    <Play className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" /> 
-                    <span>Одоо үзэх</span>
-                  </div>
+        <section className="mb-20">
+          <div 
+            className="relative rounded-[40px] md:rounded-[60px] overflow-hidden bg-slate-900 aspect-video md:aspect-[21/9] flex items-center justify-center shadow-2xl group cursor-pointer" 
+            onClick={() => handleOpenYouTube(heroVideo)}
+          >
+            <img 
+              src={heroVideo.thumbnail} 
+              alt={heroVideo.title} 
+              className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[5s]"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${heroVideo.id}/hqdefault.jpg`;
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+            
+            <div className="relative z-10 text-center px-6 max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600 text-white text-[10px] font-black mb-6 tracking-widest uppercase shadow-xl">
+                <Sparkles className="w-3 h-3" /> Онцлох бичлэг
+              </div>
+              <h2 className="text-2xl md:text-5xl font-black text-white mb-8 line-clamp-2 leading-tight">
+                {heroVideo.title}
+              </h2>
+              <div className="flex justify-center">
+                <div className="flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-2xl font-black text-lg hover:bg-red-600 hover:text-white transition-all shadow-2xl active:scale-95 group">
+                  <Play className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" /> 
+                  <span>Одоо үзэх</span>
                 </div>
               </div>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         {/* List Header */}
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-10">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900">Видео Сургаал</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900">Видео Номлол</h1>
             <p className="text-slate-500 mt-3 text-lg">Бидний YouTube суваг дээрх хамгийн сүүлийн үеийн бичлэгүүд.</p>
           </div>
           <div className="flex gap-4">
@@ -115,7 +128,7 @@ const SermonPage: React.FC = () => {
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {videos.slice(1).map((video) => (
+          {videos.map((video) => (
             <div 
               key={video.id} 
               className="group flex flex-col cursor-pointer"
@@ -152,7 +165,7 @@ const SermonPage: React.FC = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
           <div className="relative z-10 text-center md:text-left">
             <h3 className="text-3xl font-bold mb-4">YouTube Сувагт бүртгүүлээрэй</h3>
-            <p className="text-slate-400 max-w-md">Шинэ сургаал, бичлэгүүдийг цаг алдалгүй хүлээн авч, сүнслэгээр өсөж нэгдээрэй.</p>
+            <p className="text-slate-400 max-w-md">Шинэ номлол, бичлэгүүдийг цаг алдалгүй хүлээн авч, сүнслэгээр өсөж нэгдээрэй.</p>
           </div>
           <a 
             href="https://www.youtube.com/@ilchlelt?sub_confirmation=1" 

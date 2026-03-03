@@ -8,13 +8,13 @@ export interface YouTubeVideo {
   author: string;
 }
 
-export const CHANNEL_ID = 'UC87i3_n-zR6xNfR_Yy-Y75A';
+export const CHANNEL_ID = 'UCcuWVaHkayGyttxoPDuaa1Q';
 export const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
 
 export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   {
     id: 'Q4TXZUBR0yA',
-    title: 'Сургаал ба Залбирал | Илчлэлт Сүм',
+    title: 'Номлол ба Залбирал | Илчлэлт Сүм',
     link: 'https://youtu.be/Q4TXZUBR0yA',
     pubDate: '2024-03-01',
     thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
@@ -54,7 +54,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'y515MrzLqqw',
-    title: 'Гэр бүлийн цуглаан - Сургаал',
+    title: 'Гэр бүлийн цуглаан - Номлол',
     link: 'https://youtu.be/y515MrzLqqw',
     pubDate: '2024-02-10',
     thumbnail: 'https://img.youtube.com/vi/y515MrzLqqw/maxresdefault.jpg',
@@ -74,6 +74,14 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
     link: 'https://youtu.be/d80xFbQ1ry8',
     pubDate: '2024-03-20',
     thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
+    id: 'mc4Y0tSFsuo',
+    title: 'Бурханы хайр ба нигүүлсэл',
+    link: 'https://www.youtube.com/watch?v=mc4Y0tSFsuo',
+    pubDate: '2020-01-01',
+    thumbnail: 'https://img.youtube.com/vi/mc4Y0tSFsuo/maxresdefault.jpg',
     author: 'Илчлэлт Сүм'
   }
 ];
@@ -154,7 +162,7 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
           const videoId = getTagValue(entry, "videoId");
           return {
             id: videoId,
-            title: getTagValue(entry, "title") || "Сургаал",
+            title: getTagValue(entry, "title") || "Номлол",
             link: `https://www.youtube.com/watch?v=${videoId}`,
             pubDate: getTagValue(entry, "published"),
             thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,

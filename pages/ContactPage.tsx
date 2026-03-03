@@ -48,6 +48,23 @@ const ContactPage: React.FC = () => {
     setStatus('sending');
     
     try {
+      // 1. Send to local API for Admin Panel
+      const localRes = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          topic: formData.topic,
+          message: formData.message
+        }),
+      });
+
+      if (!localRes.ok) {
+        console.warn("Failed to save message locally");
+      }
+
+      // 2. Send to Google Apps Script (Legacy/External)
       const params = new URLSearchParams();
       params.append('name', formData.name);
       params.append('phone', formData.phone);

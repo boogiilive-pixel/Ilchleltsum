@@ -34,6 +34,15 @@ import MinistryPage from './pages/MinistryPage';
 import TestimonialSection from './components/TestimonialSection';
 import MouseFollower from './components/MouseFollower';
 
+// Admin Pages
+import AdminLogin from './pages/Admin/AdminLogin';
+import AdminLayout from './pages/Admin/AdminLayout';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import AdminNews from './pages/Admin/AdminNews';
+import AdminSermons from './pages/Admin/AdminSermons';
+import AdminGallery from './pages/Admin/AdminGallery';
+import AdminMessages from './pages/Admin/AdminMessages';
+
 // --- CONFIGURATION ---
 export const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbwTsMCjSn82ui6OvCxuYLTlBeh7vj5CHCEn43T5Zp4dSAEPtpbS2iEg0lLtzURzjRIR/exec"; 
 
@@ -45,7 +54,7 @@ export const isValidEmail = (email: string) => {
 // Global Nav Links
 const NAV_LINKS = [
   { name: 'Нүүр', path: '/' },
-  { name: 'Сургаал', path: '/sermons' },
+  { name: 'Номлол', path: '/sermons' },
   { name: 'Мэдээлэл', path: '/info' },
   { name: 'Үйл ажиллагаа', path: '/events' },
   { name: 'Хандив', path: '/donation' },
@@ -284,6 +293,18 @@ const Footer: React.FC = () => {
     setLoading(true);
 
     try {
+      // 1. Send to local API for Admin Panel
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: "Newsletter Subscriber",
+          phone: phone,
+          topic: "Мэдээлэл авах хүсэлт",
+          message: `Утасны дугаар: ${phone}. Мэдээлэл авах хүсэлт илгээлээ.`
+        }),
+      }).catch(e => console.warn("Failed to save subscription locally", e));
+
       const params = new URLSearchParams();
       params.append('phone', phone);
       params.append('action', 'Мэдээлэл авах хүсэлт (Newsletter - Phone)');
@@ -380,7 +401,10 @@ const Footer: React.FC = () => {
           </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-800 text-center text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">© {new Date().getFullYear()} Илчлэлт Сүм. Бүх эрх хуулиар хамгаалагдсан.</div>
+      <div className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">© {new Date().getFullYear()} Илчлэлт Сүм. Бүх эрх хуулиар хамгаалагдсан.</div>
+        <Link to="/admin/login" className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-10 hover:opacity-50 transition-opacity">Админ</Link>
+      </div>
     </footer>
   );
 };
@@ -390,33 +414,51 @@ const AppContent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col relative">
-      <MouseFollower />
-      <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/sermons" element={<SermonPage />} />
-          <Route path="/info" element={<InfoPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
-          <Route path="/events" element={<EventsPage user={user} />} />
-          <Route path="/ministry" element={<MinistryPage user={user} />} />
-          <Route path="/donation" element={<DonationPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Routes>
-      </main>
-      <TestimonialSection />
-      <ScrollToTopButton />
-      <Footer />
-    </div>
+    <Routes>
+      {/* Admin Routes (No Main Layout) */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="news" element={<AdminNews />} />
+        <Route path="sermons" element={<AdminSermons />} />
+        <Route path="gallery" element={<AdminGallery />} />
+        <Route path="messages" element={<AdminMessages />} />
+      </Route>
+
+      {/* Main App Routes */}
+      <Route path="*" element={
+        <div className="min-h-screen flex flex-col relative">
+          <MouseFollower />
+          <Navbar user={user} onAuthClick={() => setIsAuthOpen(true)} onLogout={() => setUser(null)} />
+          <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} onLoginSuccess={u => {setUser(u); setIsAuthOpen(false);}} />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/sermons" element={<SermonPage />} />
+              <Route path="/info" element={<InfoPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
+              <Route path="/events" element={<EventsPage user={user} />} />
+              <Route path="/ministry" element={<MinistryPage user={user} />} />
+              <Route path="/donation" element={<DonationPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+            </Routes>
+          </main>
+          <TestimonialSection />
+          <ScrollToTopButton />
+          <Footer />
+        </div>
+      } />
+    </Routes>
   );
 };
 
-const App: React.FC = () => (
-  <HashRouter>
-    <ScrollToTop />
-    <AppContent />
-  </HashRouter>
-);
+const App: React.FC = () => {
+  console.log("APP COMPONENT RENDERING...");
+  return (
+    <HashRouter>
+      <ScrollToTop />
+      <AppContent />
+    </HashRouter>
+  );
+};
 
 export default App;

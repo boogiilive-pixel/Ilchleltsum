@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
 import { POSTS } from './InfoPage';
+import { fetchSermons, YouTubeVideo } from '../sermonService';
+import { Youtube as YoutubeIcon } from 'lucide-react';
 
 // Custom Cross Icon component
 const CrossIcon = ({ className = "w-4 h-4" }) => (
@@ -56,11 +58,16 @@ const HERO_IMAGES = [
 ];
 
 const LandingPage: React.FC = () => {
+  console.log("LANDING PAGE RENDERING...");
   const [topic, setTopic] = useState('');
   const [encouragement, setEncouragement] = useState('');
   const [loading, setLoading] = useState(false);
+  const [latestSermons, setLatestSermons] = useState<YouTubeVideo[]>([]);
+  const [loadingSermons, setLoadingSermons] = useState(true);
   const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
+  const [dynamicNews, setDynamicNews] = useState<any[]>([]);
+  const [dynamicGallery, setDynamicGallery] = useState<any[]>([]);
   
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef<HTMLDivElement>(null);
@@ -70,6 +77,39 @@ const LandingPage: React.FC = () => {
     const timer = setInterval(() => {
       setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length);
     }, 5000);
+    
+    // Fetch latest sermons
+    const loadSermons = async () => {
+      try {
+        const sermons = await fetchSermons();
+        // Get the last 3 videos (bottom of the list)
+        setLatestSermons(sermons.slice(-3));
+      } catch (err) {
+        console.error("Failed to fetch sermons for landing page:", err);
+      } finally {
+        setLoadingSermons(false);
+      }
+    };
+
+    const loadDynamicData = async () => {
+      try {
+        const [newsRes, galleryRes] = await Promise.all([
+          fetch('/api/news'),
+          fetch('/api/gallery')
+        ]);
+        const news = await newsRes.json();
+        const gallery = await galleryRes.json();
+        setDynamicNews(news.slice(0, 3));
+        setDynamicGallery(gallery.length > 0 ? gallery : GALLERY_IMAGES);
+      } catch (err) {
+        console.error("Failed to fetch dynamic data:", err);
+        setDynamicGallery(GALLERY_IMAGES);
+      }
+    };
+
+    loadSermons();
+    loadDynamicData();
+
     return () => clearInterval(timer);
   }, []);
 
@@ -169,7 +209,7 @@ const LandingPage: React.FC = () => {
             </Link>
             <Link to="/sermons" className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-10 py-5 rounded-full font-bold text-xl hover:bg-white/20 transition-all flex items-center gap-3 group">
               <Play className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" /> 
-              Сургаал номлол
+              Номлол
             </Link>
           </div>
 
@@ -230,26 +270,26 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {POSTS.slice(0, 3).map((post) => (
+            {(dynamicNews.length > 0 ? dynamicNews : POSTS.slice(0, 3)).map((post) => (
               <Link 
                 key={post.id} 
                 to="/info" 
                 className="group flex flex-col bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
               >
                 <div className="h-60 overflow-hidden relative">
-                  <img src={post.image} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <img src={post.image || post.url} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-teal-800 shadow-lg">{post.category}</span>
+                    <span className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-teal-800 shadow-lg">{post.category || 'Мэдээ'}</span>
                   </div>
                 </div>
                 <div className="p-8">
                   <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
-                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {post.date}</span>
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {post.date || new Date(post.createdAt).toLocaleDateString()}</span>
                     <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                    <span className="flex items-center gap-1.5"><UserIcon className="w-3.5 h-3.5" /> {post.author}</span>
+                    <span className="flex items-center gap-1.5"><UserIcon className="w-3.5 h-3.5" /> {post.author || 'Админ'}</span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2 group-hover:text-teal-700 transition-colors leading-tight">{post.title}</h3>
-                  <p className="text-slate-500 mb-6 line-clamp-2 text-sm leading-relaxed">{post.excerpt}</p>
+                  <p className="text-slate-500 mb-6 line-clamp-2 text-sm leading-relaxed">{post.excerpt || post.content}</p>
                   <div className="pt-6 border-t border-slate-50 flex items-center text-teal-700 font-bold text-sm">
                     Дэлгэрэнгүй унших <ArrowRight className="w-4 h-4 ml-2 group-hover:ml-4 transition-all" />
                   </div>
@@ -273,7 +313,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[240px]">
-            {GALLERY_IMAGES.map((img, idx) => {
+            {dynamicGallery.map((img, idx) => {
               const spanClass = 
                 img.size === 'large' ? 'col-span-2 row-span-2' : 
                 img.size === 'wide' ? 'col-span-2 row-span-1' : 
@@ -285,7 +325,7 @@ const LandingPage: React.FC = () => {
                   onClick={() => setSelectedImageIdx(idx)}
                   className={`${spanClass} relative group rounded-[2rem] overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-700 transform hover:-translate-y-2`}
                 >
-                  <img src={img.url} alt={img.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <img src={img.url} alt={img.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8">
                     <p className="text-teal-400 font-bold text-sm mb-1 uppercase tracking-widest">{img.title}</p>
                     <div className="flex items-center justify-between">
@@ -313,10 +353,10 @@ const LandingPage: React.FC = () => {
             <ChevronRight className="w-8 h-8" />
           </button>
           <div className="relative max-w-5xl w-full h-[80vh] flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-            <img src={GALLERY_IMAGES[selectedImageIdx].url} alt="Preview" className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl animate-in zoom-in duration-500" />
+            <img src={dynamicGallery[selectedImageIdx].url} alt="Preview" className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl animate-in zoom-in duration-500" referrerPolicy="no-referrer" />
             <div className="mt-8 text-center text-white">
-              <h4 className="text-2xl font-bold mb-2">{GALLERY_IMAGES[selectedImageIdx].title}</h4>
-              <p className="text-slate-400">Илчлэлт Сүм - {selectedImageIdx + 1} / {GALLERY_IMAGES.length}</p>
+              <h4 className="text-2xl font-bold mb-2">{dynamicGallery[selectedImageIdx].title}</h4>
+              <p className="text-slate-400">Илчлэлт Сүм - {selectedImageIdx + 1} / {dynamicGallery.length}</p>
             </div>
           </div>
         </div>
@@ -352,6 +392,66 @@ const LandingPage: React.FC = () => {
                ) : (
                  <p className="text-2xl md:text-3xl italic leading-relaxed font-medium text-teal-50">"{encouragement}"</p>
                )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Latest Sermons Section */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 text-red-600 font-bold uppercase tracking-widest text-sm mb-4">
+                <YoutubeIcon className="w-5 h-5" /> Видео номлол
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Сүүлийн <span className="text-red-600">Номлолууд</span></h2>
+            </div>
+            <Link to="/sermons" className="flex items-center gap-2 px-8 py-4 bg-white text-red-600 font-bold rounded-2xl hover:bg-red-50 transition-all border border-slate-200 shadow-sm group">
+              Бүх номлол <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+
+          {loadingSermons ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-red-600" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {latestSermons.map((video) => (
+                <a 
+                  key={video.id} 
+                  href={video.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex flex-col bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+                >
+                  <div className="h-52 overflow-hidden relative">
+                    <img 
+                      src={video.thumbnail} 
+                      alt={video.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all duration-300 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-50 group-hover:scale-100 transition-all duration-300 shadow-xl">
+                        <Play className="w-6 h-6 text-red-600 fill-current ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
+                      <Clock className="w-3.5 h-3.5" /> {new Date(video.pubDate).toLocaleDateString('mn-MN')}
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-4 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight">{video.title}</h3>
+                    <div className="pt-6 border-t border-slate-50 flex items-center text-red-600 font-bold text-sm">
+                      Одоо үзэх <Play className="w-4 h-4 ml-2 fill-current" />
+                    </div>
+                  </div>
+                </a>
+              ))}
             </div>
           )}
         </div>

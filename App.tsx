@@ -403,7 +403,6 @@ const Footer: React.FC = () => {
       </div>
       <div className="max-w-7xl mx-auto px-4 py-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-30">© {new Date().getFullYear()} Илчлэлт Сүм. Бүх эрх хуулиар хамгаалагдсан.</div>
-        <Link to="/admin/login" className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-10 hover:opacity-50 transition-opacity">Админ</Link>
       </div>
     </footer>
   );

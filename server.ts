@@ -1,19 +1,19 @@
 
 import express from "express";
-import { createServer as createViteServer } from "vite";
+// import { createServer as createViteServer } from "vite"; // Move to dynamic import
 import fs from "fs";
 import path from "path";
 import cors from "cors";
 
 console.log("SERVER.TS LOADED - " + new Date().toISOString());
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
 async function startServer() {
   console.log("Starting server...");
   console.log("NODE_ENV:", process.env.NODE_ENV);
   console.log("APP_URL:", process.env.APP_URL);
-  
-  const app = express();
-  const PORT = 3000;
   
   // Ensure data directory exists
   const DATA_DIR = path.resolve("data");
@@ -300,6 +300,7 @@ async function startServer() {
   if (!isProd) {
     console.log("Starting Vite in middleware mode...");
     try {
+      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
@@ -357,13 +358,17 @@ async function startServer() {
     });
   });
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`>>> Server is listening on port ${PORT} <<<`);
-    console.log(`>>> Health check: http://localhost:${PORT}/api/health <<<`);
-  });
+  // Only listen if not running as a serverless function (e.g., on Vercel)
+  if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`>>> Server is listening on port ${PORT} <<<`);
+      console.log(`>>> Health check: http://localhost:${PORT}/api/health <<<`);
+    });
+  }
 }
 
-console.log("Initializing startServer...");
 startServer().catch(err => {
   console.error("CRITICAL: Failed to start server:", err);
 });
+
+export default app;

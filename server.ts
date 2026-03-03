@@ -18,7 +18,24 @@ async function startServer() {
   
   console.log("PRAYERS_FILE path:", PRAYERS_FILE);
 
-  // 1. Request logger (Move to top)
+  // 2. CORS - Use the standard cors package for robustness
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Reflect origin to support credentials: true
+      callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    maxAge: 86400
+  }));
+
+  // Handle preflight manually just in case, though cors() handles it
+  app.options('*', (req, res) => {
+    res.sendStatus(204);
+  });
+
+  // 1. Request logger
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Host: ${req.headers.host} - Origin: ${req.headers.origin}`);
     next();
@@ -26,21 +43,6 @@ async function startServer() {
 
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-  
-  // 2. CORS (Must be before routes)
-  const corsOptions = {
-    origin: (origin: any, callback: any) => {
-      // Reflect the origin back to the client to support credentials
-      callback(null, true);
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-    credentials: true,
-    maxAge: 86400 // 24 hours
-  };
-
-  app.use(cors(corsOptions));
-  app.options('*', cors(corsOptions)); // Explicitly handle preflight for all routes with the same config
 
   // Body parsing error handler
   app.use((err: any, req: any, res: any, next: any) => {

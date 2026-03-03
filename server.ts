@@ -28,19 +28,19 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   
   // 2. CORS (Must be before routes)
-  // When credentials: true is used, origin cannot be '*'
-  app.use(cors({
-    origin: (origin, callback) => {
-      // Allow all origins for now to fix the Vercel issue
+  const corsOptions = {
+    origin: (origin: any, callback: any) => {
+      // Reflect the origin back to the client to support credentials
       callback(null, true);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    credentials: true
-  }));
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400 // 24 hours
+  };
 
-  // Handle preflight for all routes
-  app.options('*', cors());
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions)); // Explicitly handle preflight for all routes with the same config
 
   // Body parsing error handler
   app.use((err: any, req: any, res: any, next: any) => {

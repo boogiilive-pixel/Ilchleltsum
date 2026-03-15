@@ -82,8 +82,8 @@ const LandingPage: React.FC = () => {
     const loadSermons = async () => {
       try {
         const sermons = await fetchSermons();
-        // Get the last 3 videos (bottom of the list)
-        setLatestSermons(sermons.slice(-3));
+        // Get the first 3 videos (newest first)
+        setLatestSermons(sermons.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch sermons for landing page:", err);
       } finally {
@@ -442,9 +442,6 @@ const LandingPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="p-8">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest">
-                      <Clock className="w-3.5 h-3.5" /> {new Date(video.pubDate).toLocaleDateString('mn-MN')}
-                    </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-4 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight">{video.title}</h3>
                     <div className="pt-6 border-t border-slate-50 flex items-center text-red-600 font-bold text-sm">
                       Одоо үзэх <Play className="w-4 h-4 ml-2 fill-current" />

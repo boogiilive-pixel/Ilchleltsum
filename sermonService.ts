@@ -13,8 +13,16 @@ export const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CH
 
 export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   {
+    id: '-2rCblislLQ',
+    title: 'Илчлэлт Сүм',
+    link: 'https://youtu.be/-2rCblislLQ',
+    pubDate: '2024-03-15T00:00:00Z',
+    thumbnail: 'https://img.youtube.com/vi/-2rCblislLQ/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
     id: 'Q4TXZUBR0yA',
-    title: 'Номлол ба Залбирал | Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/Q4TXZUBR0yA',
     pubDate: '2024-03-01',
     thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
@@ -22,7 +30,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'JDwKU9aAw74',
-    title: 'Итгэлийн хүч - Магтан хүндэтгэл',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/JDwKU9aAw74',
     pubDate: '2024-02-28',
     thumbnail: 'https://img.youtube.com/vi/JDwKU9aAw74/maxresdefault.jpg',
@@ -30,7 +38,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: '4AoPz2YVyuI',
-    title: 'Бурханы хайр бидний амьдралд',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/4AoPz2YVyuI',
     pubDate: '2024-02-25',
     thumbnail: 'https://img.youtube.com/vi/4AoPz2YVyuI/maxresdefault.jpg',
@@ -38,7 +46,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'B9Z1MMpKJAQ',
-    title: 'Сүнслэг өсөлт ба нөхөрлөл',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/B9Z1MMpKJAQ',
     pubDate: '2024-02-20',
     thumbnail: 'https://img.youtube.com/vi/B9Z1MMpKJAQ/maxresdefault.jpg',
@@ -46,7 +54,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: '1TBJdqg0XWk',
-    title: 'Библийн гүнзгийрүүлсэн судлал',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/1TBJdqg0XWk',
     pubDate: '2024-02-15',
     thumbnail: 'https://img.youtube.com/vi/1TBJdqg0XWk/maxresdefault.jpg',
@@ -54,7 +62,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'y515MrzLqqw',
-    title: 'Гэр бүлийн цуглаан - Номлол',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/y515MrzLqqw',
     pubDate: '2024-02-10',
     thumbnail: 'https://img.youtube.com/vi/y515MrzLqqw/maxresdefault.jpg',
@@ -62,7 +70,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: '-oYxPfGYdaw',
-    title: 'Итгэл найдвар биднийг хөтөлнө',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/-oYxPfGYdaw',
     pubDate: '2024-02-05',
     thumbnail: 'https://img.youtube.com/vi/-oYxPfGYdaw/maxresdefault.jpg',
@@ -70,7 +78,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'd80xFbQ1ry8',
-    title: 'Бурханы Үг - Амьдралын Гэрэл | Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/d80xFbQ1ry8',
     pubDate: '2024-03-20',
     thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
@@ -78,7 +86,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'mc4Y0tSFsuo',
-    title: 'Бурханы хайр ба нигүүлсэл',
+    title: 'Илчлэлт Сүм',
     link: 'https://www.youtube.com/watch?v=mc4Y0tSFsuo',
     pubDate: '2020-01-01',
     thumbnail: 'https://img.youtube.com/vi/mc4Y0tSFsuo/maxresdefault.jpg',
@@ -162,7 +170,7 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
           const videoId = getTagValue(entry, "videoId");
           return {
             id: videoId,
-            title: getTagValue(entry, "title") || "Номлол",
+            title: 'Илчлэлт Сүм',
             link: `https://www.youtube.com/watch?v=${videoId}`,
             pubDate: getTagValue(entry, "published"),
             thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,

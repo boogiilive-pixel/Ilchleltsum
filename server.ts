@@ -251,8 +251,19 @@ async function startServer() {
     });
   });
 
+  // --- RSS Caching ---
+  let rssCache: { xml: string; timestamp: number } | null = null;
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
   app.get("/api/sermons-rss", async (req, res) => {
     try {
+      // Check cache
+      if (rssCache && (Date.now() - rssCache.timestamp < CACHE_TTL)) {
+        console.log("[RSS Proxy] Serving from cache");
+        res.set("Content-Type", "text/xml");
+        return res.send(rssCache.xml);
+      }
+
       const CHANNEL_ID = 'UCcuWVaHkayGyttxoPDuaa1Q';
       const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
       
@@ -275,6 +286,9 @@ async function startServer() {
         console.error("[RSS Proxy] Received non-XML content:", xml.substring(0, 200));
         throw new Error("Received non-XML content from YouTube");
       }
+
+      // Update cache
+      rssCache = { xml, timestamp: Date.now() };
 
       res.set("Content-Type", "text/xml");
       res.send(xml);

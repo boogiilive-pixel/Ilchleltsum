@@ -160,6 +160,38 @@ const SermonPage: React.FC = () => {
           ))}
         </div>
 
+        {/* Special Requested Video at the Bottom */}
+        <div className="mt-20 pt-20 border-t border-slate-200">
+          <h2 className="text-3xl font-black text-slate-900 mb-10 text-center">Онцлох сургаал</h2>
+          <div 
+            className="max-w-4xl mx-auto group cursor-pointer"
+            onClick={() => handleOpenYouTube({
+              id: '-2rCblislLQ',
+              title: 'Илчлэлт Сүм',
+              link: 'https://www.youtube.com/watch?v=-2rCblislLQ',
+              pubDate: '2024-03-15',
+              thumbnail: 'https://img.youtube.com/vi/-2rCblislLQ/maxresdefault.jpg',
+              author: 'Илчлэлт Сүм'
+            })}
+          >
+            <div className="relative aspect-video rounded-[40px] overflow-hidden shadow-2xl bg-slate-900">
+              <img 
+                src="https://img.youtube.com/vi/-2rCblislLQ/maxresdefault.jpg" 
+                alt="Илчлэлт Сүм" 
+                className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 bg-red-600 text-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                  <Play className="w-10 h-10 fill-current ml-1" />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-slate-950 to-transparent">
+                <h3 className="text-2xl font-bold text-white">Илчлэлт Сүм</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* CTA */}
         <div className="mt-24 p-12 bg-slate-900 rounded-[48px] text-white flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>

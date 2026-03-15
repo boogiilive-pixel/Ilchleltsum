@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.env
+data/*.json
+!data/church_info.json
+!data/news.json
+!data/sermons.json

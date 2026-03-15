@@ -29,6 +29,14 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
     author: 'Илчлэлт Сүм'
   },
   {
+    id: 'd80xFbQ1ry8',
+    title: 'Илчлэлт Сүм',
+    link: 'https://youtu.be/d80xFbQ1ry8',
+    pubDate: '2024-03-20',
+    thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
     id: 'JDwKU9aAw74',
     title: 'Илчлэлт Сүм',
     link: 'https://youtu.be/JDwKU9aAw74',
@@ -51,46 +59,6 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
     pubDate: '2024-02-20',
     thumbnail: 'https://img.youtube.com/vi/B9Z1MMpKJAQ/maxresdefault.jpg',
     author: 'Илчлэлт Сүм'
-  },
-  {
-    id: '1TBJdqg0XWk',
-    title: 'Илчлэлт Сүм',
-    link: 'https://youtu.be/1TBJdqg0XWk',
-    pubDate: '2024-02-15',
-    thumbnail: 'https://img.youtube.com/vi/1TBJdqg0XWk/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'y515MrzLqqw',
-    title: 'Илчлэлт Сүм',
-    link: 'https://youtu.be/y515MrzLqqw',
-    pubDate: '2024-02-10',
-    thumbnail: 'https://img.youtube.com/vi/y515MrzLqqw/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: '-oYxPfGYdaw',
-    title: 'Илчлэлт Сүм',
-    link: 'https://youtu.be/-oYxPfGYdaw',
-    pubDate: '2024-02-05',
-    thumbnail: 'https://img.youtube.com/vi/-oYxPfGYdaw/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'd80xFbQ1ry8',
-    title: 'Илчлэлт Сүм',
-    link: 'https://youtu.be/d80xFbQ1ry8',
-    pubDate: '2024-03-20',
-    thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
-  },
-  {
-    id: 'mc4Y0tSFsuo',
-    title: 'Илчлэлт Сүм',
-    link: 'https://www.youtube.com/watch?v=mc4Y0tSFsuo',
-    pubDate: '2020-01-01',
-    thumbnail: 'https://img.youtube.com/vi/mc4Y0tSFsuo/maxresdefault.jpg',
-    author: 'Илчлэлт Сүм'
   }
 ];
 
@@ -110,10 +78,31 @@ const getTagValue = (entry: Element, tagName: string): string => {
 };
 
 export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
+  let serverRateLimited = false;
+
+  try {
+    // Try the new JSON endpoint first (Server-side parsed and cached)
+    const response = await fetch(`/api/youtube-videos?t=${Date.now()}`);
+    if (response.ok) {
+      const fetchedVideos = await response.json();
+      if (Array.isArray(fetchedVideos) && fetchedVideos.length > 0) {
+        console.log(`Successfully fetched ${fetchedVideos.length} videos from JSON API`);
+        const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
+        const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
+        return unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+      }
+    } else if (response.status === 429) {
+      serverRateLimited = true;
+      console.warn("Server is rate limited by YouTube (429)");
+    }
+  } catch (err) {
+    console.warn("JSON API fetch failed, falling back to RSS proxy", err);
+  }
+
   const proxies = [
-    // 1. Local Server Proxy (Most reliable)
-    (url: string) => `/api/sermons-rss?t=${Date.now()}`,
-    // 2. External Proxies (Fallbacks)
+    // 1. Local Server Proxy (RSS XML) - Skip if we already know server is rate limited
+    ...(serverRateLimited ? [] : [(url: string) => `/api/sermons-rss?t=${Date.now()}`]),
+    // 2. External Proxies (Fallbacks) - These use the USER'S IP
     (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&timestamp=${Date.now()}`,
     (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&timestamp=${Date.now()}`,
     (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
@@ -146,24 +135,55 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
         xmlContent = await response.text();
       }
 
-      if (!xmlContent || xmlContent.length < 100) {
-        throw new Error("Received suspicious or empty content");
+      if (!xmlContent || xmlContent.length < 100 || !xmlContent.trim().startsWith('<')) {
+        throw new Error("Received suspicious or non-XML content");
       }
 
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
       
       const parserError = xmlDoc.getElementsByTagName("parsererror");
+      let entries: Element[] = [];
+
       if (parserError.length > 0) {
-        console.warn("XML parsing error details:", parserError[0].textContent);
-        // If it's the local proxy failing to parse, we want to know why
-        if (proxyUrl.startsWith('/api/')) {
-           console.error("Local proxy returned invalid XML:", xmlContent.substring(0, 500));
+        console.warn("XML parsing error detected, attempting regex fallback");
+        // Regex fallback for video IDs if XML parsing fails
+        // 1. Standard RSS tag
+        const videoIdRegex = /<yt:videoId>([^<]+)<\/yt:videoId>/g;
+        // 2. Common URL patterns in case we got HTML
+        const watchRegex = /watch\?v=([a-zA-Z0-9_-]{11})/g;
+        const embedRegex = /embed\/([a-zA-Z0-9_-]{11})/g;
+        const shortUrlRegex = /youtu\.be\/([a-zA-Z0-9_-]{11})/g;
+        
+        const videoIds = new Set<string>();
+        let match;
+        
+        while ((match = videoIdRegex.exec(xmlContent)) !== null) videoIds.add(match[1]);
+        while ((match = watchRegex.exec(xmlContent)) !== null) videoIds.add(match[1]);
+        while ((match = embedRegex.exec(xmlContent)) !== null) videoIds.add(match[1]);
+        while ((match = shortUrlRegex.exec(xmlContent)) !== null) videoIds.add(match[1]);
+
+        if (videoIds.size > 0) {
+          const uniqueIds = Array.from(videoIds);
+          console.log(`Regex fallback found ${uniqueIds.length} video IDs`);
+          const fetchedVideos: YouTubeVideo[] = uniqueIds.map((id) => ({
+            id,
+            title: 'Илчлэлт Сүм',
+            link: `https://www.youtube.com/watch?v=${id}`,
+            pubDate: new Date().toISOString(),
+            thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+            author: 'Илчлэлт Сүм'
+          }));
+
+          const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
+          const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
+          return unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
         }
-        throw new Error("XML parsing failed");
+        
+        throw new Error("XML parsing failed and regex fallback found no videos");
       }
 
-      const entries = Array.from(xmlDoc.getElementsByTagName("entry"));
+      entries = Array.from(xmlDoc.getElementsByTagName("entry"));
       
       if (entries.length > 0) {
         const fetchedVideos: YouTubeVideo[] = entries.map(entry => {

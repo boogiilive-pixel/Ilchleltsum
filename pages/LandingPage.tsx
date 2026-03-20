@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
 import { POSTS } from './InfoPage';
-import { fetchSermons, YouTubeVideo } from '../sermonService';
+import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS } from '../sermonService';
 import { Youtube as YoutubeIcon } from 'lucide-react';
 
 // Custom Cross Icon component
@@ -62,8 +62,8 @@ const LandingPage: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [encouragement, setEncouragement] = useState('');
   const [loading, setLoading] = useState(false);
-  const [latestSermons, setLatestSermons] = useState<YouTubeVideo[]>([]);
-  const [loadingSermons, setLoadingSermons] = useState(true);
+  const [latestSermons, setLatestSermons] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS.slice(0, 3));
+  const [loadingSermons, setLoadingSermons] = useState(false);
   const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
   const [currentHeroIdx, setCurrentHeroIdx] = useState(0);
   const [dynamicNews, setDynamicNews] = useState<any[]>([]);

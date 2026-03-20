@@ -291,11 +291,16 @@ async function startServer() {
       
       console.log(`[YouTube API] Fetching from YouTube: ${RSS_URL}`);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
       const response = await fetch(RSS_URL, {
+        signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
       });
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         // If we have a 429 or any error but have stale cache, serve it
@@ -394,11 +399,16 @@ async function startServer() {
       
       console.log(`[RSS Proxy] Fetching from YouTube: ${RSS_URL}`);
       
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
       const response = await fetch(RSS_URL, {
+        signal: controller.signal,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
       });
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         if (rssCache) {

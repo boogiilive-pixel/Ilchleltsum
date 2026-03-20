@@ -124,7 +124,7 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
       console.log(`Attempting sync with proxy: ${proxyUrl}`);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
 
       const response = await fetch(proxyUrl, { signal: controller.signal });
       clearTimeout(timeoutId);

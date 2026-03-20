@@ -17,22 +17,35 @@ interface SermonPageProps {
 }
 
 const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) => {
-  const [videos, setVideos] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS);
+  const [videos, setVideos] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS.filter(v => !v.category || v.category === initialCategory));
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState<'sermons' | 'series'>(initialCategory);
-
   const [error, setError] = useState<string | null>(null);
+  
+  // Cache to store fetched videos for each category
+  const [cache, setCache] = useState<Record<'sermons' | 'series', YouTubeVideo[] | null>>({
+    sermons: null,
+    series: null
+  });
 
   // Update active category if prop changes
   useEffect(() => {
     setActiveCategory(initialCategory);
   }, [initialCategory]);
 
-  const loadSermons = useCallback(async () => {
-    setLoading(true);
+  const loadSermons = useCallback(async (category: 'sermons' | 'series', forceRefresh = false) => {
+    // If we have cached data and not forcing refresh, use it immediately
+    if (!forceRefresh && cache[category]) {
+      setVideos(cache[category]!);
+      // We still do a background refresh if it's the first time or explicitly requested
+      // but we don't set loading to true to keep the UI responsive
+    } else {
+      setLoading(true);
+    }
+
     setError(null);
     try {
-      const playlistId = activeCategory === 'sermons' ? PLAYLIST_SERMONS : PLAYLIST_SERIES;
+      const playlistId = category === 'sermons' ? PLAYLIST_SERMONS : PLAYLIST_SERIES;
       
       // Use Promise.allSettled to prevent one source from blocking the other
       const results = await Promise.allSettled([
@@ -57,7 +70,7 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
       }
       
       const customSermons: YouTubeVideo[] = customSermonsData
-        .filter((s: any) => !s.category || s.category === activeCategory)
+        .filter((s: any) => !s.category || s.category === category)
         .map((s: any) => {
           const videoId = (s.youtubeId || s.id || '').trim();
           return {
@@ -73,19 +86,15 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
       // Combine both sources and ensure uniqueness by video ID
       const filteredYoutubeVideos = youtubeVideos.filter(video => {
         // If the video has a category (like fallback videos), it must match
-        if (video.category && video.category !== activeCategory) return false;
+        if (video.category && video.category !== category) return false;
         
         // If the video doesn't have a category, we filter by title keywords
         const title = video.title.toLowerCase();
-        // Strict lesson check: must contain 'хичээл' or 'lesson'
-        // But exclude 'гэр бүлийн' (family) to keep the main series clean
         const isLesson = (title.includes('хичээл') || title.includes('lesson')) && !title.includes('гэр бүлийн');
         
-        if (activeCategory === 'series') {
+        if (category === 'series') {
           return isLesson;
         } else {
-          // For sermons, show things that aren't lessons, or are specifically services/sermons
-          // 'цуврал' and 'series' are now treated as sermons unless they also contain 'хичээл'
           const isService = title.includes('мөргөл') || title.includes('номлол') || title.includes('service') || title.includes('sermon') || title.includes('цуглаан') || title.includes('цуврал') || title.includes('series') || title.includes('гэр бүлийн');
           return !isLesson || isService;
         }
@@ -103,21 +112,51 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
       const uniqueSermons = Array.from(sermonMap.values())
         .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
       
-      setVideos(uniqueSermons);
+      // Update cache and current videos
+      setCache(prev => ({ ...prev, [category]: uniqueSermons }));
+      
+      // Only update the displayed videos if the category we just fetched is still the active one
+      setActiveCategory(current => {
+        if (current === category) {
+          setVideos(uniqueSermons);
+        }
+        return current;
+      });
+
     } catch (err) {
       console.error("Failed to process sermons:", err);
-      // Only show error if we have no videos at all
       if (videos.length === 0) {
         setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");
       }
     } finally {
       setLoading(false);
     }
-  }, [videos.length, activeCategory]);
+  }, [cache, videos.length]);
 
   useEffect(() => {
-    loadSermons();
-  }, [loadSermons]);
+    loadSermons(activeCategory);
+  }, [activeCategory]);
+
+  // Pre-fetch the other category in the background after the first one is loaded
+  useEffect(() => {
+    const otherCategory = activeCategory === 'sermons' ? 'series' : 'sermons';
+    if (!cache[otherCategory] && !loading) {
+      // Small delay to prioritize the active category's initial load
+      const timer = setTimeout(() => {
+        loadSermons(otherCategory);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeCategory, cache, loading]);
+
+  const handleCategoryChange = (category: 'sermons' | 'series') => {
+    if (category === activeCategory) return;
+    setActiveCategory(category);
+  };
+
+  const handleRefresh = () => {
+    loadSermons(activeCategory, true);
+  };
 
   const handleOpenYouTube = (video: YouTubeVideo) => {
     window.open(video.link, '_blank', 'noopener,noreferrer');
@@ -185,7 +224,7 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
             {/* Category Tabs */}
             <div className="flex gap-4 mt-8">
               <button 
-                onClick={() => setActiveCategory('sermons')}
+                onClick={() => handleCategoryChange('sermons')}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black transition-all ${
                   activeCategory === 'sermons' 
                   ? 'bg-slate-900 text-white shadow-xl scale-105' 
@@ -196,7 +235,7 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
                 <span>Сургаал номлол</span>
               </button>
               <button 
-                onClick={() => setActiveCategory('series')}
+                onClick={() => handleCategoryChange('series')}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black transition-all ${
                   activeCategory === 'series' 
                   ? 'bg-slate-900 text-white shadow-xl scale-105' 
@@ -210,7 +249,7 @@ const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) 
           </div>
           <div className="flex gap-4">
             <button 
-              onClick={loadSermons}
+              onClick={handleRefresh}
               disabled={loading}
               className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm font-bold text-slate-600"
             >

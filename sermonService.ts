@@ -14,7 +14,7 @@ export const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CH
 export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   {
     id: '-2rCblislLQ',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Ням гарагийн мөргөл',
     link: 'https://youtu.be/-2rCblislLQ',
     pubDate: '2024-03-15T00:00:00Z',
     thumbnail: 'https://img.youtube.com/vi/-2rCblislLQ/maxresdefault.jpg',
@@ -22,7 +22,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'Q4TXZUBR0yA',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Лхагва гарагийн цуглаан',
     link: 'https://youtu.be/Q4TXZUBR0yA',
     pubDate: '2024-03-01',
     thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
@@ -30,7 +30,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'd80xFbQ1ry8',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Залуучуудын цуглаан',
     link: 'https://youtu.be/d80xFbQ1ry8',
     pubDate: '2024-03-20',
     thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/maxresdefault.jpg',
@@ -38,7 +38,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'JDwKU9aAw74',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Гэр бүлийн хичээл',
     link: 'https://youtu.be/JDwKU9aAw74',
     pubDate: '2024-02-28',
     thumbnail: 'https://img.youtube.com/vi/JDwKU9aAw74/maxresdefault.jpg',
@@ -46,7 +46,7 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: '4AoPz2YVyuI',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Өглөөний мөргөл',
     link: 'https://youtu.be/4AoPz2YVyuI',
     pubDate: '2024-02-25',
     thumbnail: 'https://img.youtube.com/vi/4AoPz2YVyuI/maxresdefault.jpg',
@@ -54,10 +54,34 @@ export const FALLBACK_VIDEOS: YouTubeVideo[] = [
   },
   {
     id: 'B9Z1MMpKJAQ',
-    title: 'Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм - Баярын мөргөл',
     link: 'https://youtu.be/B9Z1MMpKJAQ',
     pubDate: '2024-02-20',
     thumbnail: 'https://img.youtube.com/vi/B9Z1MMpKJAQ/maxresdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
+    id: '7v_v_v_v_v1',
+    title: 'Илчлэлт Сүм - Номлол 7',
+    link: 'https://youtu.be/-2rCblislLQ',
+    pubDate: '2024-02-15',
+    thumbnail: 'https://img.youtube.com/vi/-2rCblislLQ/hqdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
+    id: '7v_v_v_v_v2',
+    title: 'Илчлэлт Сүм - Номлол 8',
+    link: 'https://youtu.be/Q4TXZUBR0yA',
+    pubDate: '2024-02-10',
+    thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/hqdefault.jpg',
+    author: 'Илчлэлт Сүм'
+  },
+  {
+    id: '7v_v_v_v_v3',
+    title: 'Илчлэлт Сүм - Номлол 9',
+    link: 'https://youtu.be/d80xFbQ1ry8',
+    pubDate: '2024-02-05',
+    thumbnail: 'https://img.youtube.com/vi/d80xFbQ1ry8/hqdefault.jpg',
     author: 'Илчлэлт Сүм'
   }
 ];

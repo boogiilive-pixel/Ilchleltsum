@@ -20,19 +20,35 @@ const SermonPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [youtubeVideos, customSermonsRes] = await Promise.all([
+      // Use Promise.allSettled to prevent one source from blocking the other
+      const results = await Promise.allSettled([
         fetchSermons(),
-        fetch('/api/sermons')
+        fetch('/api/sermons').then(res => res.json())
       ]);
       
-      const customSermonsData = await customSermonsRes.json();
+      let youtubeVideos: YouTubeVideo[] = [];
+      let customSermonsData: any[] = [];
+
+      if (results[0].status === 'fulfilled') {
+        youtubeVideos = results[0].value;
+      } else {
+        console.error("YouTube fetch failed:", results[0].reason);
+        youtubeVideos = FALLBACK_VIDEOS;
+      }
+
+      if (results[1].status === 'fulfilled') {
+        customSermonsData = results[1].value;
+      } else {
+        console.error("Custom sermons fetch failed:", results[1].reason);
+      }
+      
       const customSermons: YouTubeVideo[] = customSermonsData.map((s: any) => {
         const videoId = (s.youtubeId || s.id || '').trim();
         return {
           id: videoId,
           title: s.title,
           link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
-          pubDate: s.createdAt,
+          pubDate: s.createdAt || s.pubDate || new Date().toISOString(),
           thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
           author: 'Илчлэлт Сүм'
         };
@@ -48,16 +64,20 @@ const SermonPage: React.FC = () => {
         }
       });
       
-      const uniqueSermons = Array.from(sermonMap.values());
+      const uniqueSermons = Array.from(sermonMap.values())
+        .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
       
       setVideos(uniqueSermons);
     } catch (err) {
-      console.error("Failed to load sermons:", err);
-      setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");
+      console.error("Failed to process sermons:", err);
+      // Only show error if we have no videos at all
+      if (videos.length === 0) {
+        setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [videos.length]);
 
   useEffect(() => {
     loadSermons();

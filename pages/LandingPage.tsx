@@ -81,19 +81,34 @@ const LandingPage: React.FC = () => {
     // Fetch latest sermons
     const loadSermons = async () => {
       try {
-        const [youtubeVideos, customSermonsRes] = await Promise.all([
+        const results = await Promise.allSettled([
           fetchSermons(),
-          fetch('/api/sermons')
+          fetch('/api/sermons').then(res => res.json())
         ]);
         
-        const customSermonsData = await customSermonsRes.json();
+        let youtubeVideos: YouTubeVideo[] = [];
+        let customSermonsData: any[] = [];
+
+        if (results[0].status === 'fulfilled') {
+          youtubeVideos = results[0].value;
+        } else {
+          console.error("YouTube fetch failed:", results[0].reason);
+          youtubeVideos = FALLBACK_VIDEOS;
+        }
+
+        if (results[1].status === 'fulfilled') {
+          customSermonsData = results[1].value;
+        } else {
+          console.error("Custom sermons fetch failed:", results[1].reason);
+        }
+        
         const customSermons: YouTubeVideo[] = customSermonsData.map((s: any) => {
           const videoId = (s.youtubeId || s.id || '').trim();
           return {
             id: videoId,
             title: s.title,
             link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
-            pubDate: s.createdAt,
+            pubDate: s.createdAt || s.pubDate || new Date().toISOString(),
             thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             author: 'Илчлэлт Сүм'
           };

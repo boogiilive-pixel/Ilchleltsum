@@ -88,7 +88,14 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
       if (Array.isArray(fetchedVideos) && fetchedVideos.length > 0) {
         console.log(`Successfully fetched ${fetchedVideos.length} videos from JSON API`);
         const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
-        const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
+        const uniqueMap = new Map<string, YouTubeVideo>();
+        all.forEach(v => {
+          const id = (v.id || '').trim();
+          if (id) {
+            uniqueMap.set(id, { ...v, id });
+          }
+        });
+        const unique = Array.from(uniqueMap.values());
         return unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
       }
     } else if (response.status === 429) {
@@ -167,16 +174,23 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
           const uniqueIds = Array.from(videoIds);
           console.log(`Regex fallback found ${uniqueIds.length} video IDs`);
           const fetchedVideos: YouTubeVideo[] = uniqueIds.map((id) => ({
-            id,
+            id: id.trim(),
             title: 'Илчлэлт Сүм',
-            link: `https://www.youtube.com/watch?v=${id}`,
+            link: `https://www.youtube.com/watch?v=${id.trim()}`,
             pubDate: new Date().toISOString(),
-            thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
+            thumbnail: `https://img.youtube.com/vi/${id.trim()}/maxresdefault.jpg`,
             author: 'Илчлэлт Сүм'
           }));
 
           const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
-          const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
+          const uniqueMap = new Map<string, YouTubeVideo>();
+          all.forEach(v => {
+            const id = (v.id || '').trim();
+            if (id) {
+              uniqueMap.set(id, { ...v, id });
+            }
+          });
+          const unique = Array.from(uniqueMap.values());
           return unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
         }
         
@@ -201,7 +215,14 @@ export const fetchSermons = async (): Promise<YouTubeVideo[]> => {
         if (fetchedVideos.length > 0) {
           console.log(`Successfully synced ${fetchedVideos.length} videos`);
           const all = [...fetchedVideos, ...FALLBACK_VIDEOS];
-          const unique = Array.from(new Map(all.map(v => [v.id, v])).values());
+          const uniqueMap = new Map<string, YouTubeVideo>();
+          all.forEach(v => {
+            const id = (v.id || '').trim();
+            if (id) {
+              uniqueMap.set(id, { ...v, id });
+            }
+          });
+          const unique = Array.from(uniqueMap.values());
           return unique.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
         }
       }

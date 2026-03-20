@@ -81,9 +81,39 @@ const LandingPage: React.FC = () => {
     // Fetch latest sermons
     const loadSermons = async () => {
       try {
-        const sermons = await fetchSermons();
+        const [youtubeVideos, customSermonsRes] = await Promise.all([
+          fetchSermons(),
+          fetch('/api/sermons')
+        ]);
+        
+        const customSermonsData = await customSermonsRes.json();
+        const customSermons: YouTubeVideo[] = customSermonsData.map((s: any) => {
+          const videoId = (s.youtubeId || s.id || '').trim();
+          return {
+            id: videoId,
+            title: s.title,
+            link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
+            pubDate: s.createdAt,
+            thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            author: 'Илчлэлт Сүм'
+          };
+        }).filter((s: any) => s.id);
+        
+        // Combine both sources and ensure uniqueness by video ID
+        const allSermons = [...customSermons, ...youtubeVideos];
+        const sermonMap = new Map<string, YouTubeVideo>();
+        
+        allSermons.forEach(video => {
+          if (video.id) {
+            sermonMap.set(video.id, video);
+          }
+        });
+        
+        const uniqueSermons = Array.from(sermonMap.values())
+          .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
+          
         // Get the first 3 videos (newest first)
-        setLatestSermons(sermons.slice(0, 3));
+        setLatestSermons(uniqueSermons.slice(0, 3));
       } catch (err) {
         console.error("Failed to fetch sermons for landing page:", err);
       } finally {

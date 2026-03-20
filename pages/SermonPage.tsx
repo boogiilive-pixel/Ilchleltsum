@@ -25,11 +25,32 @@ const SermonPage: React.FC = () => {
         fetch('/api/sermons')
       ]);
       
-      const customSermons = await customSermonsRes.json();
+      const customSermonsData = await customSermonsRes.json();
+      const customSermons: YouTubeVideo[] = customSermonsData.map((s: any) => {
+        const videoId = (s.youtubeId || s.id || '').trim();
+        return {
+          id: videoId,
+          title: s.title,
+          link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
+          pubDate: s.createdAt,
+          thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          author: 'Илчлэлт Сүм'
+        };
+      }).filter((s: any) => s.id);
       
-      // Combine both sources, putting custom ones first or merging them
-      // Custom sermons are already in YouTubeVideo format from the admin panel
-      setVideos([...customSermons, ...youtubeVideos]);
+      // Combine both sources and ensure uniqueness by video ID
+      const allSermons = [...customSermons, ...youtubeVideos];
+      const sermonMap = new Map<string, YouTubeVideo>();
+      
+      allSermons.forEach(video => {
+        if (video.id) {
+          sermonMap.set(video.id, video);
+        }
+      });
+      
+      const uniqueSermons = Array.from(sermonMap.values());
+      
+      setVideos(uniqueSermons);
     } catch (err) {
       console.error("Failed to load sermons:", err);
       setError("Бичлэгүүдийг шинэчлэхэд алдаа гарлаа. Та дараа дахин оролдоорой.");

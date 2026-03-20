@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
@@ -22,7 +22,8 @@ import {
   ArrowUp,
   Send,
   Bell,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 import LandingPage from './pages/LandingPage';
 import SermonPage from './pages/SermonPage';
@@ -54,7 +55,14 @@ export const isValidEmail = (email: string) => {
 // Global Nav Links
 const NAV_LINKS = [
   { name: 'Нүүр', path: '/' },
-  { name: 'Номлол', path: '/sermons' },
+  { 
+    name: 'Номлол', 
+    path: '/sermons',
+    dropdown: [
+      { name: 'Сургаал номлол', path: '/sermons' },
+      { name: 'Цуврал хичээл', path: '/series' },
+    ]
+  },
   { name: 'Мэдээлэл', path: '/info' },
   { name: 'Үйл ажиллагаа', path: '/events' },
   { name: 'Хандив', path: '/donation' },
@@ -230,13 +238,29 @@ const Navbar: React.FC<{
 }> = ({ user, onAuthClick, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    };
   }, []);
+
+  const handleMouseEnter = (name: string) => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setActiveDropdown(name);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 150);
+  };
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-nav shadow-md py-2' : 'bg-transparent py-4'}`}>
@@ -250,7 +274,44 @@ const Navbar: React.FC<{
         </Link>
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {NAV_LINKS.map((link) => (
-            <Link key={link.path} to={link.path} className={`font-semibold text-sm transition-all hover:-translate-y-0.5 ${location.pathname === link.path ? 'text-teal-700 underline underline-offset-8 decoration-2' : 'text-slate-600 hover:text-teal-700'}`}>{link.name}</Link>
+            <div 
+              key={link.name} 
+              className="relative group/dropdown"
+              onMouseEnter={() => link.dropdown && handleMouseEnter(link.name)}
+              onMouseLeave={() => link.dropdown && handleMouseLeave()}
+            >
+              <Link 
+                to={link.path} 
+                className={`flex items-center gap-1 font-semibold text-sm transition-all hover:-translate-y-0.5 ${
+                  location.pathname === link.path || (link.dropdown?.some(d => d.path === location.pathname))
+                    ? 'text-teal-700 underline underline-offset-8 decoration-2' 
+                    : 'text-slate-600 hover:text-teal-700'
+                }`}
+              >
+                {link.name}
+                {link.dropdown && <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === link.name ? 'rotate-180' : ''}`} />}
+              </Link>
+
+              {link.dropdown && (
+                <div className={`absolute top-full left-0 w-48 pt-2 transition-all duration-200 origin-top-left ${
+                  activeDropdown === link.name ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                }`}>
+                  <div className="bg-white rounded-2xl shadow-xl border border-slate-100 py-2">
+                    {link.dropdown.map((subItem) => (
+                      <Link
+                        key={subItem.path}
+                        to={subItem.path}
+                        className={`block px-4 py-2 text-sm font-bold transition-colors ${
+                          location.pathname === subItem.path ? 'text-teal-700 bg-teal-50' : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        {subItem.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           ))}
           {user ? (
             <div className="flex items-center gap-4 pl-4 border-l border-slate-200">
@@ -264,9 +325,48 @@ const Navbar: React.FC<{
         <button className="md:hidden p-2 text-slate-700" onClick={() => setIsOpen(!isOpen)}>{isOpen ? <X /> : <Menu />}</button>
       </div>
       {isOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 p-4 flex flex-col gap-2 shadow-2xl">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-slate-100 p-4 flex flex-col gap-2 shadow-2xl overflow-y-auto max-h-[80vh]">
           {NAV_LINKS.map((link) => (
-            <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`flex items-center gap-3 p-4 rounded-xl font-bold ${location.pathname === link.path ? 'bg-teal-50 text-teal-700' : 'text-slate-700'}`}>{link.name}</Link>
+            <div key={link.name} className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <Link 
+                  to={link.path} 
+                  onClick={() => !link.dropdown && setIsOpen(false)} 
+                  className={`flex-grow flex items-center gap-3 p-4 rounded-xl font-bold ${
+                    location.pathname === link.path || (link.dropdown?.some(d => d.path === location.pathname))
+                      ? 'bg-teal-50 text-teal-700' 
+                      : 'text-slate-700'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+                {link.dropdown && (
+                  <button 
+                    onClick={() => setActiveDropdown(activeDropdown === link.name ? null : link.name)}
+                    className="p-4 text-slate-400"
+                  >
+                    <ChevronDown className={`w-5 h-5 transition-transform ${activeDropdown === link.name ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
+              </div>
+              
+              {link.dropdown && activeDropdown === link.name && (
+                <div className="flex flex-col pl-8 gap-1 animate-in slide-in-from-top-2 duration-200">
+                  {link.dropdown.map((subItem) => (
+                    <Link
+                      key={subItem.path}
+                      to={subItem.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`p-3 rounded-xl text-sm font-bold ${
+                        location.pathname === subItem.path ? 'text-teal-700' : 'text-slate-500'
+                      }`}
+                    >
+                      {subItem.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
           {!user && <button onClick={() => { setIsOpen(false); onAuthClick(); }} className="mt-2 w-full py-4 bg-teal-700 text-white font-bold rounded-xl">Нэгдэх</button>}
         </div>
@@ -433,7 +533,8 @@ const AppContent: React.FC = () => {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/sermons" element={<SermonPage />} />
+              <Route path="/sermons" element={<SermonPage initialCategory="sermons" />} />
+              <Route path="/series" element={<SermonPage initialCategory="series" />} />
               <Route path="/info" element={<InfoPage user={user} onAuthClick={() => setIsAuthOpen(true)} />} />
               <Route path="/events" element={<EventsPage user={user} />} />
               <Route path="/ministry" element={<MinistryPage user={user} />} />

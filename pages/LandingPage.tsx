@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { getEncouragement } from '../geminiService';
 import { POSTS } from './InfoPage';
-import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS } from '../sermonService';
+import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS, PLAYLIST_SERMONS } from '../sermonService';
 import { Youtube as YoutubeIcon } from 'lucide-react';
 
 // Custom Cross Icon component
@@ -82,7 +82,7 @@ const LandingPage: React.FC = () => {
     const loadSermons = async () => {
       try {
         const results = await Promise.allSettled([
-          fetchSermons(),
+          fetchSermons(PLAYLIST_SERMONS),
           fetch('/api/sermons').then(res => res.json())
         ]);
         
@@ -254,7 +254,7 @@ const LandingPage: React.FC = () => {
             </Link>
             <Link to="/sermons" className="bg-white/10 backdrop-blur-xl text-white border border-white/20 px-10 py-5 rounded-full font-bold text-xl hover:bg-white/20 transition-all flex items-center gap-3 group">
               <Play className="w-6 h-6 fill-current group-hover:scale-110 transition-transform" /> 
-              Номлол
+              Сургаал номлол
             </Link>
           </div>
 
@@ -315,7 +315,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {(dynamicNews.length > 0 ? dynamicNews : POSTS.slice(0, 3)).map((post) => (
+            {Array.from(new Map([...dynamicNews, ...POSTS].map(item => [item.id, item])).values()).slice(0, 3).map((post) => (
               <Link 
                 key={post.id} 
                 to="/info" 
@@ -450,10 +450,10 @@ const LandingPage: React.FC = () => {
               <div className="inline-flex items-center gap-2 text-red-600 font-bold uppercase tracking-widest text-sm mb-4">
                 <YoutubeIcon className="w-5 h-5" /> Видео номлол
               </div>
-              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Сүүлийн <span className="text-red-600">Номлолууд</span></h2>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Сүүлийн <span className="text-red-600">Сургаал номлолууд</span></h2>
             </div>
             <Link to="/sermons" className="flex items-center gap-2 px-8 py-4 bg-white text-red-600 font-bold rounded-2xl hover:bg-red-50 transition-all border border-slate-200 shadow-sm group">
-              Бүх номлол <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Бүх сургаал номлол <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 

@@ -15,7 +15,8 @@ const AdminSermons: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    youtubeUrl: ''
+    youtubeUrl: '',
+    category: 'sermons'
   });
 
   const fetchSermons = async () => {
@@ -56,12 +57,13 @@ const AdminSermons: React.FC = () => {
           title: formData.title,
           youtubeId: youtubeId,
           thumbnail: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
-          link: `https://www.youtube.com/watch?v=${youtubeId}`
+          link: `https://www.youtube.com/watch?v=${youtubeId}`,
+          category: formData.category
         }),
       });
       if (res.ok) {
         setIsModalOpen(false);
-        setFormData({ title: '', youtubeUrl: '' });
+        setFormData({ title: '', youtubeUrl: '', category: 'sermons' });
         fetchSermons();
       }
     } catch (error) {
@@ -128,12 +130,19 @@ const AdminSermons: React.FC = () => {
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </span>
-                    <button 
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
+                        (item as any).category === 'series' ? 'bg-blue-100 text-blue-600' : 'bg-teal-100 text-teal-600'
+                      }`}>
+                        {(item as any).category === 'series' ? 'Цуврал' : 'Номлол'}
+                      </span>
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -176,6 +185,25 @@ const AdminSermons: React.FC = () => {
                     className="w-full pl-12 pr-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-600/20 transition-all font-bold"
                     placeholder="https://www.youtube.com/watch?v=..."
                   />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-500 uppercase tracking-widest">Төрөл</label>
+                <div className="flex gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({...formData, category: 'sermons'})}
+                    className={`flex-1 py-3 rounded-2xl font-bold transition-all ${formData.category === 'sermons' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    Сургаал номлол
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setFormData({...formData, category: 'series'})}
+                    className={`flex-1 py-3 rounded-2xl font-bold transition-all ${formData.category === 'series' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                  >
+                    Цуврал хичээл
+                  </button>
                 </div>
               </div>
               <div className="flex gap-4 pt-4">

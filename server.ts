@@ -254,10 +254,10 @@ async function startServer() {
 
   // --- RSS Caching ---
   const YOUTUBE_CACHE_FILE = getFilePath("youtube_videos_cache.json");
-  const RSS_CACHE_FILE = getFilePath("youtube_rss_cache.xml");
+  const RSS_CACHE_FILE = getFilePath("youtube_rss_cache.json");
   
-  let rssCache: { xml: string; timestamp: number } | null = null;
-  let videoCache: { json: any; timestamp: number } | null = null;
+  let rssCache: { [key: string]: { xml: string; timestamp: number } } = {};
+  let videoCache: { [key: string]: { json: any; timestamp: number } } = {};
   const CACHE_TTL = 60 * 60 * 1000; // 1 hour (increased to reduce 429s)
 
   // Load cache from disk on startup
@@ -265,13 +265,17 @@ async function startServer() {
     if (fs.existsSync(YOUTUBE_CACHE_FILE)) {
       const content = fs.readFileSync(YOUTUBE_CACHE_FILE, "utf-8");
       const data = JSON.parse(content);
-      videoCache = { json: data.json, timestamp: data.timestamp };
+      // Support migration from old single-cache format
+      if (data.json && data.timestamp) {
+        videoCache['default'] = { json: data.json, timestamp: data.timestamp };
+      } else {
+        videoCache = data;
+      }
       console.log("[YouTube API] Loaded video cache from disk");
     }
     if (fs.existsSync(RSS_CACHE_FILE)) {
-      const xml = fs.readFileSync(RSS_CACHE_FILE, "utf-8");
-      const stats = fs.statSync(RSS_CACHE_FILE);
-      rssCache = { xml, timestamp: stats.mtimeMs };
+      const content = fs.readFileSync(RSS_CACHE_FILE, "utf-8");
+      rssCache = JSON.parse(content);
       console.log("[RSS Proxy] Loaded RSS cache from disk");
     }
   } catch (e) {
@@ -279,15 +283,22 @@ async function startServer() {
   }
 
   app.get("/api/youtube-videos", async (req, res) => {
+    const playlistId = req.query.playlistId as string;
+    const isPlaceholder = (id?: string) => !id || id.includes('PLACEHOLDER');
+    const cacheKey = (playlistId && !isPlaceholder(playlistId)) ? playlistId : 'default';
+    
     try {
       // Check cache - if valid, serve it
-      if (videoCache && (Date.now() - videoCache.timestamp < CACHE_TTL)) {
-        console.log("[YouTube API] Serving from fresh cache");
-        return res.json(videoCache.json);
+      const cached = videoCache[cacheKey];
+      if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+        console.log(`[YouTube API] Serving ${cacheKey} from fresh cache`);
+        return res.json(cached.json);
       }
 
       const CHANNEL_ID = 'UCcuWVaHkayGyttxoPDuaa1Q';
-      const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+      const RSS_URL = (playlistId && !isPlaceholder(playlistId))
+        ? `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`
+        : `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
       
       console.log(`[YouTube API] Fetching from YouTube: ${RSS_URL}`);
       
@@ -297,16 +308,28 @@ async function startServer() {
       const response = await fetch(RSS_URL, {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1'
         }
       });
       clearTimeout(timeoutId);
       
       if (!response.ok) {
         // If we have a 429 or any error but have stale cache, serve it
-        if (videoCache) {
-          console.warn(`[YouTube API] Fetch failed (${response.status}), serving stale cache`);
-          return res.json(videoCache.json);
+        if (cached) {
+          console.warn(`[YouTube API] Fetch failed (${response.status}) for ${cacheKey}, serving stale cache`);
+          return res.json(cached.json);
         }
         return res.status(response.status).json({ error: `YouTube RSS fetch failed with status: ${response.status}` });
       }
@@ -319,9 +342,10 @@ async function startServer() {
         const entries = result.feed.entry || [];
         videos = entries.map((entry: any) => {
           const videoId = entry['yt:videoId'] ? entry['yt:videoId'][0] : '';
+          const title = entry.title ? entry.title[0] : 'Видео';
           return {
             id: videoId,
-            title: 'Илчлэлт Сүм',
+            title: title,
             link: `https://www.youtube.com/watch?v=${videoId}`,
             pubDate: entry.published ? entry.published[0] : '',
             thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
@@ -332,22 +356,18 @@ async function startServer() {
         console.warn("[YouTube API] XML parsing failed, attempting regex fallback on server");
         const videoIdRegex = /<yt:videoId>([^<]+)<\/yt:videoId>/g;
         const watchRegex = /watch\?v=([a-zA-Z0-9_-]{11})/g;
-        const embedRegex = /embed\/([a-zA-Z0-9_-]{11})/g;
-        const shortUrlRegex = /youtu\.be\/([a-zA-Z0-9_-]{11})/g;
         
         const videoIds = new Set<string>();
         let match;
         while ((match = videoIdRegex.exec(xml)) !== null) videoIds.add(match[1]);
         while ((match = watchRegex.exec(xml)) !== null) videoIds.add(match[1]);
-        while ((match = embedRegex.exec(xml)) !== null) videoIds.add(match[1]);
-        while ((match = shortUrlRegex.exec(xml)) !== null) videoIds.add(match[1]);
         
         if (videoIds.size > 0) {
           const uniqueIds = Array.from(videoIds);
           console.log(`[YouTube API] Regex fallback found ${uniqueIds.length} video IDs`);
           videos = uniqueIds.map(id => ({
             id,
-            title: 'Илчлэлт Сүм',
+            title: 'Видео',
             link: `https://www.youtube.com/watch?v=${id}`,
             pubDate: new Date().toISOString(),
             thumbnail: `https://img.youtube.com/vi/${id}/maxresdefault.jpg`,
@@ -355,16 +375,16 @@ async function startServer() {
           }));
         } else {
           console.error("[YouTube API] Regex fallback also failed to find videos");
-          if (videoCache) {
+          if (cached) {
             console.warn("[YouTube API] Serving stale cache after all parsing failed");
-            return res.json(videoCache.json);
+            return res.json(cached.json);
           }
           throw parseError;
         }
       }
 
       // Update cache
-      videoCache = { json: videos, timestamp: Date.now() };
+      videoCache[cacheKey] = { json: videos, timestamp: Date.now() };
       
       // Save to disk
       try {
@@ -376,26 +396,33 @@ async function startServer() {
       res.json(videos);
     } catch (error: any) {
       console.error("[YouTube API] Error:", error.message);
-      // Final fallback to stale cache if error occurs during parsing
-      if (videoCache) {
+      const cached = videoCache[cacheKey];
+      if (cached) {
         console.warn("[YouTube API] Error occurred, serving stale cache as last resort");
-        return res.json(videoCache.json);
+        return res.json(cached.json);
       }
       res.status(500).json({ error: error.message });
     }
   });
 
   app.get("/api/sermons-rss", async (req, res) => {
+    const playlistId = req.query.playlistId as string;
+    const isPlaceholder = (id?: string) => !id || id.includes('PLACEHOLDER');
+    const cacheKey = (playlistId && !isPlaceholder(playlistId)) ? playlistId : 'default';
+
     try {
       // Check cache
-      if (rssCache && (Date.now() - rssCache.timestamp < CACHE_TTL)) {
-        console.log("[RSS Proxy] Serving from fresh cache");
+      const cached = rssCache[cacheKey];
+      if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+        console.log(`[RSS Proxy] Serving ${cacheKey} from fresh cache`);
         res.set("Content-Type", "text/xml");
-        return res.send(rssCache.xml);
+        return res.send(cached.xml);
       }
 
       const CHANNEL_ID = 'UCcuWVaHkayGyttxoPDuaa1Q';
-      const RSS_URL = `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
+      const RSS_URL = (playlistId && !isPlaceholder(playlistId))
+        ? `https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`
+        : `https://www.youtube.com/feeds/videos.xml?channel_id=${CHANNEL_ID}`;
       
       console.log(`[RSS Proxy] Fetching from YouTube: ${RSS_URL}`);
       
@@ -405,16 +432,28 @@ async function startServer() {
       const response = await fetch(RSS_URL, {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1'
         }
       });
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        if (rssCache) {
-          console.warn(`[RSS Proxy] Fetch failed (${response.status}), serving stale cache`);
+        if (cached) {
+          console.warn(`[RSS Proxy] Fetch failed (${response.status}) for ${cacheKey}, serving stale cache`);
           res.set("Content-Type", "text/xml");
-          return res.send(rssCache.xml);
+          return res.send(cached.xml);
         }
         return res.status(response.status).json({ error: `YouTube RSS fetch failed with status: ${response.status}` });
       }
@@ -424,20 +463,20 @@ async function startServer() {
       // Basic validation that it's actually XML
       if (!xml.trim().startsWith('<?xml') && !xml.trim().startsWith('<feed')) {
         console.error("[RSS Proxy] Received non-XML content:", xml.substring(0, 200));
-        if (rssCache) {
+        if (cached) {
           console.warn("[RSS Proxy] Invalid XML received, serving stale cache");
           res.set("Content-Type", "text/xml");
-          return res.send(rssCache.xml);
+          return res.send(cached.xml);
         }
         throw new Error("Received non-XML content from YouTube");
       }
 
       // Update cache
-      rssCache = { xml, timestamp: Date.now() };
+      rssCache[cacheKey] = { xml, timestamp: Date.now() };
       
       // Save to disk
       try {
-        fs.writeFileSync(RSS_CACHE_FILE, xml, "utf-8");
+        fs.writeFileSync(RSS_CACHE_FILE, JSON.stringify(rssCache), "utf-8");
       } catch (e) {
         console.error("Error saving RSS cache to disk:", e);
       }
@@ -446,10 +485,11 @@ async function startServer() {
       res.send(xml);
     } catch (error: any) {
       console.error("[RSS Proxy] Error:", error.message);
-      if (rssCache) {
+      const cached = rssCache[cacheKey];
+      if (cached) {
         console.warn("[RSS Proxy] Error occurred, serving stale cache as last resort");
         res.set("Content-Type", "text/xml");
-        return res.send(rssCache.xml);
+        return res.send(cached.xml);
       }
       res.status(500).json({ error: error.message });
     }

@@ -6,23 +6,37 @@ import {
   Sparkles, 
   ExternalLink,
   Play,
-  AlertCircle
+  AlertCircle,
+  BookOpen,
+  MessageSquare
 } from 'lucide-react';
-import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS } from '../sermonService';
+import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS, PLAYLIST_SERMONS, PLAYLIST_SERIES, isPlaceholder } from '../sermonService';
 
-const SermonPage: React.FC = () => {
+interface SermonPageProps {
+  initialCategory?: 'sermons' | 'series';
+}
+
+const SermonPage: React.FC<SermonPageProps> = ({ initialCategory = 'sermons' }) => {
   const [videos, setVideos] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS);
   const [loading, setLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<'sermons' | 'series'>(initialCategory);
 
   const [error, setError] = useState<string | null>(null);
+
+  // Update active category if prop changes
+  useEffect(() => {
+    setActiveCategory(initialCategory);
+  }, [initialCategory]);
 
   const loadSermons = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      const playlistId = activeCategory === 'sermons' ? PLAYLIST_SERMONS : PLAYLIST_SERIES;
+      
       // Use Promise.allSettled to prevent one source from blocking the other
       const results = await Promise.allSettled([
-        fetchSermons(),
+        fetchSermons(playlistId),
         fetch('/api/sermons').then(res => res.json())
       ]);
       
@@ -42,20 +56,42 @@ const SermonPage: React.FC = () => {
         console.error("Custom sermons fetch failed:", results[1].reason);
       }
       
-      const customSermons: YouTubeVideo[] = customSermonsData.map((s: any) => {
-        const videoId = (s.youtubeId || s.id || '').trim();
-        return {
-          id: videoId,
-          title: s.title,
-          link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
-          pubDate: s.createdAt || s.pubDate || new Date().toISOString(),
-          thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-          author: 'Илчлэлт Сүм'
-        };
-      }).filter((s: any) => s.id);
+      const customSermons: YouTubeVideo[] = customSermonsData
+        .filter((s: any) => !s.category || s.category === activeCategory)
+        .map((s: any) => {
+          const videoId = (s.youtubeId || s.id || '').trim();
+          return {
+            id: videoId,
+            title: s.title,
+            link: s.link || `https://www.youtube.com/watch?v=${videoId}`,
+            pubDate: s.createdAt || s.pubDate || new Date().toISOString(),
+            thumbnail: s.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            author: 'Илчлэлт Сүм'
+          };
+        }).filter((s: any) => s.id);
       
       // Combine both sources and ensure uniqueness by video ID
-      const allSermons = [...customSermons, ...youtubeVideos];
+      const filteredYoutubeVideos = youtubeVideos.filter(video => {
+        // If the video has a category (like fallback videos), it must match
+        if (video.category && video.category !== activeCategory) return false;
+        
+        // If the video doesn't have a category, we filter by title keywords
+        const title = video.title.toLowerCase();
+        // Strict lesson check: must contain 'хичээл' or 'lesson'
+        // But exclude 'гэр бүлийн' (family) to keep the main series clean
+        const isLesson = (title.includes('хичээл') || title.includes('lesson')) && !title.includes('гэр бүлийн');
+        
+        if (activeCategory === 'series') {
+          return isLesson;
+        } else {
+          // For sermons, show things that aren't lessons, or are specifically services/sermons
+          // 'цуврал' and 'series' are now treated as sermons unless they also contain 'хичээл'
+          const isService = title.includes('мөргөл') || title.includes('номлол') || title.includes('service') || title.includes('sermon') || title.includes('цуглаан') || title.includes('цуврал') || title.includes('series') || title.includes('гэр бүлийн');
+          return !isLesson || isService;
+        }
+      });
+
+      const allSermons = [...customSermons, ...filteredYoutubeVideos];
       const sermonMap = new Map<string, YouTubeVideo>();
       
       allSermons.forEach(video => {
@@ -77,7 +113,7 @@ const SermonPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [videos.length]);
+  }, [videos.length, activeCategory]);
 
   useEffect(() => {
     loadSermons();
@@ -89,7 +125,7 @@ const SermonPage: React.FC = () => {
 
   const heroVideo: YouTubeVideo = {
     id: 'Q4TXZUBR0yA',
-    title: 'Номлол ба Залбирал | Илчлэлт Сүм',
+    title: 'Илчлэлт Сүм',
     link: 'https://www.youtube.com/watch?v=Q4TXZUBR0yA',
     pubDate: '2024-03-01',
     thumbnail: 'https://img.youtube.com/vi/Q4TXZUBR0yA/maxresdefault.jpg',
@@ -142,9 +178,35 @@ const SermonPage: React.FC = () => {
 
         {/* List Header */}
         <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-10">
-          <div>
+          <div className="flex-1">
             <h1 className="text-4xl md:text-5xl font-black text-slate-900">Видео Номлол</h1>
             <p className="text-slate-500 mt-3 text-lg">Бидний YouTube суваг дээрх хамгийн сүүлийн үеийн бичлэгүүд.</p>
+            
+            {/* Category Tabs */}
+            <div className="flex gap-4 mt-8">
+              <button 
+                onClick={() => setActiveCategory('sermons')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black transition-all ${
+                  activeCategory === 'sermons' 
+                  ? 'bg-slate-900 text-white shadow-xl scale-105' 
+                  : 'bg-white text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                <span>Сургаал номлол</span>
+              </button>
+              <button 
+                onClick={() => setActiveCategory('series')}
+                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black transition-all ${
+                  activeCategory === 'series' 
+                  ? 'bg-slate-900 text-white shadow-xl scale-105' 
+                  : 'bg-white text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <BookOpen className="w-5 h-5" />
+                <span>Цуврал хичээл</span>
+              </button>
+            </div>
           </div>
           <div className="flex gap-4">
             <button 

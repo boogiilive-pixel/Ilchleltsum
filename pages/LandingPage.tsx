@@ -20,7 +20,6 @@ import {
   User as UserIcon,
   Clock
 } from 'lucide-react';
-import { getEncouragement } from '../geminiService';
 import { POSTS } from './InfoPage';
 import { fetchSermons, YouTubeVideo, FALLBACK_VIDEOS, PLAYLIST_SERMONS } from '../sermonService';
 import { Youtube as YoutubeIcon } from 'lucide-react';
@@ -59,9 +58,6 @@ const HERO_IMAGES = [
 
 const LandingPage: React.FC = () => {
   console.log("LANDING PAGE RENDERING...");
-  const [topic, setTopic] = useState('');
-  const [encouragement, setEncouragement] = useState('');
-  const [loading, setLoading] = useState(false);
   const [latestSermons, setLatestSermons] = useState<YouTubeVideo[]>(FALLBACK_VIDEOS.slice(0, 3));
   const [loadingSermons, setLoadingSermons] = useState(false);
   const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
@@ -168,14 +164,6 @@ const LandingPage: React.FC = () => {
 
   const handleMouseLeave = () => {
     setMousePos({ x: 0, y: 0 });
-  };
-
-  const handleGetEncouragement = async () => {
-    if (!topic.trim()) return;
-    setLoading(true);
-    const result = await getEncouragement(topic);
-    setEncouragement(result);
-    setLoading(false);
   };
 
   const nextImage = (e: React.MouseEvent) => {
@@ -407,38 +395,37 @@ const LandingPage: React.FC = () => {
         </div>
       )}
 
-      {/* AI Spiritual Encouragement */}
-      <section className="py-32 bg-slate-900 text-white relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <Sparkles className="text-teal-400 w-10 h-10 animate-pulse" />
-            <h2 className="text-4xl md:text-5xl font-black">Мэдэхийг хүссэн сэдвийнхээ түлхүүр үгийг оруулна уу!</h2>
+      {/* Featured Bible Verse Section */}
+      <section className="py-28 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white relative overflow-hidden border-y border-white/10">
+        {/* Glowing Background Light Orbs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-teal-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[150px] bg-emerald-400/10 rounded-full blur-[80px] pointer-events-none"></div>
+
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-teal-500/15 text-teal-300 border border-teal-500/30 text-sm font-bold mb-10 backdrop-blur-md shadow-inner">
+            <CrossIcon className="w-4 h-4 text-teal-400" />
+            <span className="uppercase tracking-widest text-xs">Алдарт эшлэл</span>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 mb-12 bg-white/5 p-2 rounded-[32px] border border-white/10 backdrop-blur-md">
-            <input 
-              type="text" 
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleGetEncouragement()}
-              placeholder="Сэдэв (жишээ нь: итгэл найдвар, гэр бүл...)"
-              className="flex-grow px-8 py-5 rounded-[24px] bg-transparent text-white placeholder-white/30 focus:outline-none text-lg"
-            />
-            <button onClick={handleGetEncouragement} disabled={loading} className="px-10 py-5 rounded-[24px] bg-teal-500 text-white font-bold text-lg hover:bg-teal-400 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Үг авах'}
-            </button>
-          </div>
-          {encouragement && (
-            <div className={`p-10 rounded-[40px] bg-white/5 backdrop-blur-xl border border-white/10 animate-in fade-in zoom-in duration-500 flex flex-col items-center gap-6`}>
-               {encouragement.includes("API Key") ? (
-                 <div className="flex items-center gap-3 text-amber-400">
-                   <AlertCircle className="w-8 h-8" />
-                   <p className="text-lg font-bold">{encouragement}</p>
-                 </div>
-               ) : (
-                 <p className="text-2xl md:text-3xl italic leading-relaxed font-medium text-teal-50">"{encouragement}"</p>
-               )}
+
+          {/* Verse Card */}
+          <div className="relative bg-white/5 p-10 md:p-16 rounded-[48px] border border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden group hover:border-teal-500/30 transition-all duration-500">
+            {/* Background Decorative Large Quote Marks */}
+            <span className="absolute -top-6 -left-2 text-9xl font-serif text-white/5 select-none pointer-events-none">“</span>
+            <span className="absolute -bottom-16 -right-2 text-9xl font-serif text-white/5 select-none pointer-events-none">”</span>
+
+            <p className="text-2xl sm:text-3xl md:text-4xl font-serif font-medium leading-relaxed md:leading-snug text-slate-100 tracking-wide mb-8 drop-shadow-md">
+              “Бурхан ертөнцийг үнэхээр хайрласандаа цорын ганц Хүүгээ өгсөн тул Хүүд итгэдэг бүхэн мөхөхгүй харин мөнх амьтай байх болно.”
+            </p>
+
+            <div className="inline-flex items-center gap-3 pt-6 border-t border-white/10">
+              <span className="w-8 h-[2px] bg-teal-400 rounded-full"></span>
+              <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-emerald-300 uppercase tracking-wider">
+                Иохан 3:16
+              </h3>
+              <span className="w-8 h-[2px] bg-teal-400 rounded-full"></span>
             </div>
-          )}
+          </div>
         </div>
       </section>
 

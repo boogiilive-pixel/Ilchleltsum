@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import cors from "cors";
 import { parseStringPromise } from "xml2js";
+import { GoogleGenAI } from "@google/genai";
 
 console.log("SERVER.TS LOADED - " + new Date().toISOString());
 
@@ -109,6 +110,51 @@ async function startServer() {
   });
 
   // --- API Routes ---
+
+  // AI Spiritual Encouragement (Gemini)
+  app.post("/api/encouragement", async (req, res) => {
+    const { topic } = req.body || {};
+    if (!topic || typeof topic !== "string" || !topic.trim()) {
+      return res.status(400).json({ text: "Сэдэв оруулна уу." });
+    }
+
+    try {
+      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+      if (!apiKey) {
+        console.warn("[GEMINI SERVER] No GEMINI_API_KEY environment variable set.");
+        return res.status(500).json({ 
+          text: "Сэрвэр дээр GEMINI_API_KEY тохируулагдаагүй байна." 
+        });
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            'User-Agent': 'aistudio-build',
+          },
+        },
+      });
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.6-flash",
+        contents: `Би "Илчлэлт сүм" (Revelation Church)-ийн вэбсайт дээр байна. Надад дараах сэдвээр урам зориг өгөх богино хэмжээний (3-4 өгүүлбэр) Христийн шашны сургаал эсвэл Библийн эшлэл дээр үндэслэсэн үг хэлж өгөөч. Сэдэв: ${topic.trim()}. Хэл: Монгол хэл.`,
+      });
+
+      const text = response.text || "Уучлаарай, хариу ирүүлж чадсангүй.";
+      return res.json({ text });
+    } catch (error: any) {
+      console.error("[GEMINI SERVER ERROR]:", error);
+      if (error.message?.includes("API key not valid")) {
+        return res.status(400).json({ 
+          text: "Таны оруулсан API Key буруу байна. Google AI Studio-оос түлхүүрээ дахин шалгана уу." 
+        });
+      }
+      return res.status(500).json({ 
+        text: "Холболтын алдаа гарлаа. Та дараа дахин оролдоорой." 
+      });
+    }
+  });
 
   // News
   app.get("/api/news", (req, res) => {

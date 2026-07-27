@@ -111,6 +111,27 @@ async function startServer() {
 
   // --- API Routes ---
 
+  // Helper for spiritual encouragement fallback
+  function getFallbackEncouragement(topic: string): string {
+    const cleanTopic = topic.toLowerCase();
+    if (cleanTopic.includes("хайр") || cleanTopic.includes("love")) {
+      return "“Хайр бол тэвчээртэй, энэрэнгүй юм. Хайр атаархдаггүй, сүржигнэдэггүй, бардамнадаггүй.” (1 Коринт 13:4). Бурханы агапе хайр бидний амьдралын бүхий л мөчид хамт байж, сэтгэлийг тань дүүргэх болтугай.";
+    }
+    if (cleanTopic.includes("итгэл") || cleanTopic.includes("faith")) {
+      return "“Итгэл бол найдаж буй зүйлсийн чинь бодит байдал, харагдахгүй зүйлсийн баталгаа юм.” (Еврей 11:1). Тандаа бат итгэл, амар тайван байхыг хүсэн байна.";
+    }
+    if (cleanTopic.includes("найдвар") || cleanTopic.includes("hope") || cleanTopic.includes("гэрэл")) {
+      return "“Бидний найдвар Эзэнд байдаг. Тэр бол бидний тусламж ба бамбай юм.” (Дуулал 33:20). Таны замд Бурханы гэрэл үргэлж гийж, найдвар тань хэзээ ч бүү бөхөг.";
+    }
+    if (cleanTopic.includes("гэр бүл") || cleanTopic.includes("хүүхэд") || cleanTopic.includes("family")) {
+      return "“Миний гэр ба бид Эзэнд үйлчлэх болно.” (Иошуа 24:15). Эзэн Бурхан таны гэр бүлд амар тайван, хайр ивээлийг дүүрэн өгөх болтугай.";
+    }
+    if (cleanTopic.includes("амар тайван") || cleanTopic.includes("энх") || cleanTopic.includes("peace")) {
+      return "“Амар тайвныг Би та нарт үлдээнэ. Өөрийн амар тайвныг Би та нарт өгч байна.” (Иохан 14:27). Сэтгэлийн тань түгшүүр арилж, Бурханы амар тайван зүрхийг тань хамгаалах болтугай.";
+    }
+    return `“Эзэнд найддаг хүмүүсийн хүч чадал нь шинэчлэгдэж, бүргэд мэт жигүүрээ дэлгэн өгсөх болно.” (Исаиа 40:31). "${topic}" сэдвийн тухайд Бурханы үг ба ивээл таныг үргэлж тэтгэх болтугай.`;
+  }
+
   // AI Spiritual Encouragement (Gemini)
   app.post("/api/encouragement", async (req, res) => {
     const { topic } = req.body || {};
@@ -121,10 +142,8 @@ async function startServer() {
     try {
       const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
       if (!apiKey) {
-        console.warn("[GEMINI SERVER] No GEMINI_API_KEY environment variable set.");
-        return res.status(500).json({ 
-          text: "Сэрвэр дээр GEMINI_API_KEY тохируулагдаагүй байна." 
-        });
+        console.warn("[GEMINI SERVER] No GEMINI_API_KEY environment variable set. Using fallback.");
+        return res.json({ text: getFallbackEncouragement(topic.trim()) });
       }
 
       const ai = new GoogleGenAI({
@@ -136,23 +155,32 @@ async function startServer() {
         },
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: `Би "Илчлэлт сүм" (Revelation Church)-ийн вэбсайт дээр байна. Надад дараах сэдвээр урам зориг өгөх богино хэмжээний (3-4 өгүүлбэр) Христийн шашны сургаал эсвэл Библийн эшлэл дээр үндэслэсэн үг хэлж өгөөч. Сэдэв: ${topic.trim()}. Хэл: Монгол хэл.`,
-      });
+      let text = "";
+      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+      
+      for (const modelName of modelsToTry) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelName,
+            contents: `Би "Илчлэлт сүм" (Revelation Church)-ийн вэбсайт дээр байна. Надад дараах сэдвээр урам зориг өгөх богино хэмжээний (3-4 өгүүлбэр) Христийн шашны сургаал эсвэл Библийн эшлэл дээр үндэслэсэн үг хэлж өгөөч. Сэдэв: ${topic.trim()}. Хэл: Монгол хэл.`,
+          });
+          if (response.text) {
+            text = response.text;
+            break;
+          }
+        } catch (mErr: any) {
+          console.warn(`[GEMINI SERVER] Model ${modelName} failed:`, mErr?.message || mErr);
+        }
+      }
 
-      const text = response.text || "Уучлаарай, хариу ирүүлж чадсангүй.";
+      if (!text) {
+        text = getFallbackEncouragement(topic.trim());
+      }
+
       return res.json({ text });
     } catch (error: any) {
       console.error("[GEMINI SERVER ERROR]:", error);
-      if (error.message?.includes("API key not valid")) {
-        return res.status(400).json({ 
-          text: "Таны оруулсан API Key буруу байна. Google AI Studio-оос түлхүүрээ дахин шалгана уу." 
-        });
-      }
-      return res.status(500).json({ 
-        text: "Холболтын алдаа гарлаа. Та дараа дахин оролдоорой." 
-      });
+      return res.json({ text: getFallbackEncouragement(topic.trim()) });
     }
   });
 
